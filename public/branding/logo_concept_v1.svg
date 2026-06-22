@@ -1,0 +1,25 @@
+<svg width="512" height="512" viewBox="0 0 512 512" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background Circle -->
+  <circle cx="256" cy="256" r="240" fill="#1a1a1a" stroke="#d32f2f" stroke-width="8" />
+  
+  <!-- Left Side: Anime/Hand-drawn (Blue-ish tone) -->
+  <path d="M256,16 L256,496 C123,496 16,389 16,256 C16,123 123,16 256,16 Z" fill="#1e3a8a" />
+  
+  <!-- Right Side: Realistic/Live Action (Red-ish tone) -->
+  <path d="M256,16 C389,16 496,123 496,256 C496,389 389,496 256,496 L256,16 Z" fill="#7f1d1d" />
+  
+  <!-- Clashing Effect (Center) -->
+  <path d="M256,50 L280,256 L256,462 L232,256 Z" fill="#ffeb3b" />
+  <path d="M220,150 L256,256 L292,150 Z" fill="white" opacity="0.8" />
+  <path d="M220,362 L256,256 L292,362 Z" fill="white" opacity="0.8" />
+
+  <!-- Lightning Bolts -->
+  <path d="M150,150 L180,180 L160,200 L200,230" stroke="#60a5fa" stroke-width="4" fill="none" />
+  <path d="M362,362 L332,332 L352,312 L312,282" stroke="#f87171" stroke-width="4" fill="none" />
+
+  <!-- Text -->
+  <text x="256" y="270" font-family="Impact, sans-serif" font-size="60" fill="white" text-anchor="middle" font-weight="bold" stroke="black" stroke-width="2">VS</text>
+  
+  <!-- Curved Text Placeholder -->
+  <text x="256" y="440" font-family="Arial, sans-serif" font-size="24" fill="#ffeb3b" text-anchor="middle" font-weight="bold">DREAM MATCHES AI</text>
+</svg>

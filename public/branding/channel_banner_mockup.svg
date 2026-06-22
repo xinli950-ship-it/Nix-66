@@ -1,0 +1,45 @@
+<svg width="2560" height="1440" viewBox="0 0 2560 1440" xmlns="http://www.w3.org/2000/svg">
+  <!-- Background -->
+  <rect width="2560" height="1440" fill="#0a0a0a" />
+  
+  <!-- Safe Area Guide (Hidden or faint) -->
+  <rect x="507" y="508" width="1546" height="423" fill="none" stroke="rgba(255,255,255,0.1)" stroke-width="2" />
+  
+  <!-- Main Content (Center) -->
+  <g transform="translate(1280, 720)">
+    <!-- Glow Effect -->
+    <radialGradient id="centerGlow" cx="0" cy="0" r="500" gradientUnits="userSpaceOnUse">
+      <stop offset="0%" style="stop-color:#d32f2f;stop-opacity:0.3" />
+      <stop offset="100%" style="stop-color:#0a0a0a;stop-opacity:0" />
+    </radialGradient>
+    <circle cx="0" cy="0" r="800" fill="url(#centerGlow)" />
+    
+    <!-- Title Text -->
+    <text x="0" y="-50" font-family="Impact, sans-serif" font-size="120" fill="white" text-anchor="middle" font-weight="bold" stroke="black" stroke-width="5">DREAM MATCHES AI</text>
+    <text x="0" y="50" font-family="Arial, sans-serif" font-size="40" fill="#ffeb3b" text-anchor="middle" font-weight="bold" letter-spacing="10">THE ULTIMATE SIMULATION</text>
+    
+    <!-- Character Silhouettes / Icons -->
+    <g opacity="0.6">
+      <!-- Left side icons (Anime/Cartoon) -->
+      <circle cx="-400" cy="0" r="100" fill="#1e3a8a" />
+      <text x="-400" y="20" font-family="Arial" font-size="20" fill="white" text-anchor="middle">ANIME</text>
+      
+      <circle cx="-650" cy="50" r="80" fill="#166534" />
+      <text x="-650" y="70" font-family="Arial" font-size="15" fill="white" text-anchor="middle">CARTOON</text>
+      
+      <!-- Right side icons (WWE/AEW/Toku) -->
+      <circle cx="400" cy="0" r="100" fill="#7f1d1d" />
+      <text x="400" y="20" font-family="Arial" font-size="20" fill="white" text-anchor="middle">WRESTLING</text>
+      
+      <circle cx="650" cy="50" r="80" fill="#7c2d12" />
+      <text x="650" y="70" font-family="Arial" font-size="15" fill="white" text-anchor="middle">TOKU</text>
+    </g>
+    
+    <!-- Call to Action -->
+    <text x="0" y="180" font-family="Arial, sans-serif" font-size="30" fill="white" text-anchor="middle">VOTE. WATCH. DECIDE.</text>
+  </g>
+  
+  <!-- Decorative Lightning -->
+  <path d="M0,720 L800,720 L900,680 L1100,740 L1280,720" stroke="#ffeb3b" stroke-width="5" fill="none" opacity="0.3" />
+  <path d="M2560,720 L1760,720 L1660,760 L1460,700 L1280,720" stroke="#ffeb3b" stroke-width="5" fill="none" opacity="0.3" />
+</svg>

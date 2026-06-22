@@ -1,12 +1,14 @@
 import { NextRequest, NextResponse } from 'next/server';
 import { characters } from '@/data/characters';
-import { createMatch, updateMatch } from '@/lib/db';
-import { klingAI } from '@/lib/kling';
+import { query } from '@/lib/db';
+import { generateMatchScript } from '@/lib/script-generator';
 import { v4 as uuidv4 } from 'uuid';
+import { exec } from 'child_process';
+import path from 'path';
 
 export async function POST(req: NextRequest) {
   try {
-    const { player1Id, player2Id } = await req.json();
+    const { player1Id, player2Id, storylineId } = await req.json();
 
     if (!player1Id || !player2Id) {
       return NextResponse.json({ error: 'Missing player IDs' }, { status: 400 });
@@ -20,36 +22,55 @@ export async function POST(req: NextRequest) {
     }
 
     const matchId = uuidv4();
-    await createMatch(matchId, player1Id, player2Id);
-
-    // Call Kling AI or use Mock
-    const prompt = `Epic battle between ${player1.name} from ${player1.universe} and ${player2.name} from ${player2.universe}. High quality, cinematic action scene.`;
     
-    const useMock = process.env.USE_MOCK_VIDEO === 'true' || !process.env.KLING_ACCESS_KEY;
+    // Create the main match record
+    await query(
+      "INSERT INTO matches (id, player1_id, player2_id, status) VALUES (?, ?, ?, ?)",
+      [matchId, player1Id, player2Id, 'processing']
+    );
 
-    if (useMock) {
-      const mockTaskId = `mock_${uuidv4()}`;
-      await updateMatch(matchId, { task_id: mockTaskId, status: 'processing' });
-      return NextResponse.json({ matchId, taskId: mockTaskId, mock: true });
+    // If storylineId is provided, link it (we should have a match_storylines table or similar)
+    if (storylineId) {
+       // Get current chapter number
+       const res = await query("SELECT COUNT(*) as count FROM storyline_matches WHERE storyline_id = ?", [storylineId]) as any[];
+       const chapterNumber = (res[0]?.count || 0) + 1;
+       const smId = uuidv4();
+       await query(
+         "INSERT INTO storyline_matches (id, storyline_id, match_id, chapter_number, chapter_title) VALUES (?, ?, ?, ?, ?)",
+         [smId, storylineId, matchId, chapterNumber, `Chapter ${chapterNumber}`]
+       );
     }
 
-    try {
-      const task = await klingAI.createTextToVideo({
-        model_name: 'kling-v1',
-        prompt,
-        duration: '5',
-        aspect_ratio: '16:9',
-      });
+    // Generate the full match script
+    const script = generateMatchScript(player1, player2);
 
-      await updateMatch(matchId, { task_id: task.task_id, status: 'processing' });
-      
-      return NextResponse.json({ matchId, taskId: task.task_id });
-    } catch (klingError) {
-      console.error('Kling AI call failed, falling back to mock:', klingError);
-      const mockTaskId = `mock_${uuidv4()}`;
-      await updateMatch(matchId, { task_id: mockTaskId, status: 'processing' });
-      return NextResponse.json({ matchId, taskId: mockTaskId, mock: true });
+    // Insert segments into match_segments table
+    for (let i = 0; i < script.length; i++) {
+      const segment = script[i];
+      const segmentId = uuidv4();
+      await query(
+        `INSERT INTO match_segments 
+         (id, match_id, segment_type, order_index, title, prompt, commentary_script, status, duration) 
+         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+        [
+          segmentId, 
+          matchId, 
+          segment.segment_type, 
+          i, 
+          segment.title, 
+          segment.prompt || null, 
+          segment.commentary_script, 
+          'pending', 
+          segment.duration
+        ]
+      );
     }
+
+    // Start a background process to handle segment generation and assembly
+    const workerPath = path.join(process.cwd(), 'src/workers/match-worker.js');
+    exec(`node ${workerPath} ${matchId} > /tmp/match-${matchId}.log 2>&1 &`);
+    
+    return NextResponse.json({ matchId, message: 'Match generation pipeline started' });
 
   } catch (error) {
     console.error('Error generating match:', error);

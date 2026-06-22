@@ -59,11 +59,13 @@ export async function query(sql: string, params: any[] = []) {
   if (sql.startsWith('UPDATE matches SET')) {
     const id = sql.match(/WHERE id = '([^']+)'/)?.[1];
     if (id && mockMatches[id]) {
-      // Simple parser for status and video_url updates
+      // Simple parser for updates
       if (sql.includes("status = 'succeed'")) mockMatches[id].status = 'succeed';
       if (sql.includes("status = 'failed'")) mockMatches[id].status = 'failed';
       const videoMatch = sql.match(/video_url = '([^']+)'/);
       if (videoMatch) mockMatches[id].video_url = videoMatch[1];
+      const winnerMatch = sql.match(/winner_id = '([^']+)'/);
+      if (winnerMatch) mockMatches[id].winner_id = winnerMatch[1];
     }
     return [];
   }
@@ -85,7 +87,7 @@ export async function createMatch(id: string, player1Id: string, player2Id: stri
   return await query('INSERT INTO matches (id, player1_id, player2_id, status) VALUES (?, ?, ?, ?)', [id, player1Id, player2Id, 'submitted']);
 }
 
-export async function updateMatch(id: string, updates: { status?: string, video_url?: string, task_id?: string }) {
+export async function updateMatch(id: string, updates: { status?: string, video_url?: string, task_id?: string, winner_id?: string }) {
   const sets = Object.entries(updates)
     .map(([key, value]) => `${key} = '${value}'`)
     .join(', ');
