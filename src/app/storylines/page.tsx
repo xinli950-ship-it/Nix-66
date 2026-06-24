@@ -1,8 +1,15 @@
+export const dynamic = 'force-dynamic';
+
 import Link from 'next/link';
 import { getStorylines } from '@/lib/storylines';
 
 export default async function StorylinesPage() {
-  const storylines = await getStorylines();
+  let storylines = [];
+  try {
+    storylines = await getStorylines();
+  } catch (e) {
+    console.error('Failed to load storylines:', e);
+  }
 
   return (
     <main className="flex-1 p-8">

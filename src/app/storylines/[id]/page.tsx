@@ -1,3 +1,5 @@
+export const dynamic = 'force-dynamic';
+
 import { getStoryline, getStorylineMatches, getCharacterStats } from '@/lib/storylines';
 import { characters } from '@/data/characters';
 import Link from 'next/link';
@@ -9,7 +11,12 @@ export default async function StorylineDetailPage({
   params: Promise<{ id: string }>;
 }) {
   const { id } = await params;
-  const storyline = await getStoryline(id);
+  let storyline = null;
+  try {
+    storyline = await getStoryline(id);
+  } catch (e) {
+    console.error('Failed to load storyline:', e);
+  }
   
   if (!storyline) {
     return (
@@ -25,8 +32,14 @@ export default async function StorylineDetailPage({
     );
   }
 
-  const matches = await getStorylineMatches(id);
-  const stats = await getCharacterStats(id);
+  let matches = [];
+  let stats = {};
+  try {
+    matches = await getStorylineMatches(id);
+    stats = await getCharacterStats(id);
+  } catch (e) {
+    console.error('Failed to load storyline data:', e);
+  }
 
   return (
     <main className="flex-1 p-8">
