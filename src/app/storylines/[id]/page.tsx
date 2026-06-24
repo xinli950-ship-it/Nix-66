@@ -32,8 +32,8 @@ export default async function StorylineDetailPage({
     );
   }
 
-  let matches = [];
-  let stats = {};
+  let matches: any[] = [];
+  let stats: Record<string, { wins: number; losses: number; draws: number }> = {};
   try {
     matches = await getStorylineMatches(id);
     stats = await getCharacterStats(id);
