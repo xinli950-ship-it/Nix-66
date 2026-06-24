@@ -1,10 +1,10 @@
 export const dynamic = 'force-dynamic';
 
 import Link from 'next/link';
-import { getStorylines } from '@/lib/storylines';
+import { getStorylines, Storyline } from '@/lib/storylines';
 
 export default async function StorylinesPage() {
-  let storylines = [];
+  let storylines: Storyline[] = [];
   try {
     storylines = await getStorylines();
   } catch (e) {
