@@ -1,246 +1,172 @@
 'use client';
 
-import { useState, useEffect } from 'react';
+import { useState, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import Link from 'next/link';
 import { characters, Character } from '@/data/characters';
-import CharacterCard from '@/components/CharacterCard';
-import SuggestMatch from '@/components/SuggestMatch';
-import { Storyline } from '@/lib/storylines';
+
+const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku'] as const;
 
 export default function Home() {
   const [player1, setPlayer1] = useState<Character | null>(null);
   const [player2, setPlayer2] = useState<Character | null>(null);
-  const [selectingFor, setSelectingFor] = useState<1 | 2>(1);
-  const [storyMode, setStoryMode] = useState(false);
-  const [storylines, setStorylines] = useState<Storyline[]>([]);
-  const [selectedStoryline, setSelectedStoryline] = useState<string>('');
-
+  const [selectingFor, setSelectingFor] = useState<'p1' | 'p2'>('p1');
+  const [category, setCategory] = useState<string>('All');
+  const [search, setSearch] = useState('');
+  const [showSelect, setShowSelect] = useState(true);
   const router = useRouter();
 
-  useEffect(() => {
-    fetch('/api/storylines')
-      .then(res => res.json())
-      .then(data => {
-        if (Array.isArray(data)) {
-          setStorylines(data);
-          if (data.length > 0) setSelectedStoryline(data[0].id);
-        }
-      })
-      .catch(err => console.error('Error fetching storylines:', err));
-  }, []);
+  const filtered = useMemo(() => {
+    let list = characters;
+    if (category !== 'All') list = list.filter(c => c.category === category);
+    if (search) list = list.filter(c => c.name.toLowerCase().includes(search.toLowerCase()));
+    return list;
+  }, [category, search]);
 
-  const handleSelect = (character: Character) => {
-    if (selectingFor === 1) {
-      setPlayer1(character);
-      setSelectingFor(2);
+  const handleSelect = (char: Character) => {
+    if (selectingFor === 'p1') {
+      setPlayer1(char);
+      setSelectingFor('p2');
     } else {
-      setPlayer2(character);
-      setSelectingFor(1);
+      setPlayer2(char);
+      setSelectingFor('p1');
     }
   };
 
   const startMatch = async () => {
     if (player1 && player2) {
-      try {
-        const response = await fetch('/api/match/generate', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ 
-            player1Id: player1.id, 
-            player2Id: player2.id,
-            storylineId: storyMode ? selectedStoryline : null
-          }),
-        });
-        const data = await response.json();
-        if (data.matchId) {
-          router.push(`/match/${data.matchId}`);
-        } else {
-          alert('Failed to generate match');
-        }
-      } catch (error) {
-        console.error('Error starting match:', error);
-        alert('An error occurred while starting the match');
-      }
+      const res = await fetch('/api/match/generate', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ player1Id: player1.id, player2Id: player2.id }),
+      });
+      const data = await res.json();
+      if (data.matchId) router.push(`/match/${data.matchId}`);
     }
   };
 
-  return (
-    <main className="min-h-screen bg-gray-900 text-white p-8 pt-4">
-      <div className="max-w-6xl mx-auto">
-        <header className="text-center mb-12">
-          <h1 className="text-5xl font-extrabold mb-4 text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
-            DREAM MATCHES
-          </h1>
-          <p className="text-xl text-gray-400">Battle across universes with AI-generated videos</p>
-        </header>
+  const resetSelection = () => {
+    setPlayer1(null);
+    setPlayer2(null);
+    setSelectingFor('p1');
+    setShowSelect(true);
+  };
 
-        {/* Featured Match Request */}
-        <section className="mb-12 bg-gradient-to-r from-blue-900/40 to-red-900/40 p-1 rounded-2xl">
-          <div className="bg-gray-900/90 rounded-[calc(1rem-1px)] p-6 flex flex-col md:flex-row items-center justify-between gap-6">
-            <div>
-              <span className="bg-yellow-500 text-black text-xs font-bold px-2 py-1 rounded uppercase mb-2 inline-block">Featured Request</span>
-              <h2 className="text-2xl font-bold italic">The Elite (AEW) vs. The Bloodline (WWE)</h2>
-              <p className="text-gray-400">The ultimate wrestling crossover fans have been waiting for!</p>
-            </div>
-            <button 
-              onClick={() => {
-                const elite = characters.find(c => c.name === 'Kenny Omega');
-                const bloodline = characters.find(c => c.name === 'Roman Reigns');
-                if (elite && bloodline) {
-                  setPlayer1(elite);
-                  setPlayer2(bloodline);
-                  window.scrollTo({ top: 0, behavior: 'smooth' });
-                }
-              }}
-              className="bg-white text-black px-6 py-2 rounded-full font-bold hover:bg-gray-200 transition-colors whitespace-nowrap"
-            >
-              Load Matchup
-            </button>
-          </div>
-        </section>
-
-        {/* Matchup Selection Area */}
-        <div className="mb-16 bg-gray-800 p-8 rounded-2xl border border-gray-700 shadow-2xl">
-          <div className="flex flex-col md:flex-row items-center justify-between gap-8 mb-8">
-            <div className="flex flex-col items-center">
-              <h2 className="text-xl font-bold mb-4 text-red-400">Fighter 1</h2>
-              {player1 ? (
-                <div className="w-48">
-                  <CharacterCard 
-                    character={player1} 
-                    onSelect={() => setSelectingFor(1)} 
-                    selected={selectingFor === 1}
-                  />
-                </div>
-              ) : (
-                <div 
-                  className={`w-48 aspect-[2/3] border-4 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-colors ${selectingFor === 1 ? 'border-yellow-400 bg-gray-700' : 'border-gray-600 hover:border-gray-500'}`}
-                  onClick={() => setSelectingFor(1)}
-                >
-                  <span className="text-gray-400">Select Fighter 1</span>
-                </div>
-              )}
-            </div>
-
-            <div className="flex flex-col items-center justify-center gap-4 flex-1">
-              <div className="text-6xl font-black italic text-gray-700">VS</div>
-              
-              {/* Story Mode Toggle */}
-              <div className="bg-gray-900/50 p-4 rounded-xl border border-gray-700 w-full max-w-sm">
-                <div className="flex items-center justify-between mb-4">
-                  <span className="font-bold text-sm text-gray-300 uppercase tracking-wider">Story Mode</span>
-                  <button 
-                    onClick={() => setStoryMode(!storyMode)}
-                    className={`w-12 h-6 rounded-full transition-colors relative ${storyMode ? 'bg-yellow-500' : 'bg-gray-600'}`}
-                  >
-                    <div className={`absolute top-1 w-4 h-4 bg-white rounded-full transition-transform ${storyMode ? 'left-7' : 'left-1'}`}></div>
-                  </button>
-                </div>
-                
-                {storyMode && (
-                  <div className="animate-in fade-in slide-in-from-top-2 duration-300">
-                    <label className="block text-xs font-bold text-gray-500 mb-2 uppercase">Select Storyline</label>
-                    <select 
-                      value={selectedStoryline}
-                      onChange={(e) => setSelectedStoryline(e.target.value)}
-                      className="w-full bg-gray-800 border border-gray-600 rounded-lg p-2 text-sm focus:outline-none focus:border-yellow-500"
-                    >
-                      {storylines.map(s => (
-                        <option key={s.id} value={s.id}>{s.title}</option>
-                      ))}
-                    </select>
-                    {selectedStoryline && (
-                      <p className="mt-2 text-xs text-gray-400 italic line-clamp-2">
-                        {storylines.find(s => s.id === selectedStoryline)?.description}
-                      </p>
-                    )}
-                  </div>
-                )}
+  // VS Screen
+  if (!showSelect && player1 && player2) {
+    return (
+      <main className="min-h-screen bg-gray-900 text-white">
+        <div className="flex flex-col items-center justify-center min-h-screen p-8">
+          <div className="flex items-center gap-8 md:gap-16 mb-12">
+            <div className="text-center">
+              <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+                <img src={player1.imageUrl} alt={player1.name} className="w-full h-full object-cover" />
               </div>
-
-              <button
-                onClick={startMatch}
-                disabled={!player1 || !player2}
-                className={`w-full max-w-sm py-4 rounded-full font-bold text-xl transition-all ${
-                  player1 && player2 
-                  ? 'bg-red-600 hover:bg-red-500 hover:scale-105 shadow-[0_0_20px_rgba(220,38,38,0.5)]' 
-                  : 'bg-gray-700 cursor-not-allowed opacity-50'
-                }`}
-              >
-                GENERATE MATCH
-              </button>
+              <h2 className="text-2xl font-black mt-4 text-red-400">{player1.name}</h2>
+              <p className="text-gray-500 text-sm">{player1.universe}</p>
             </div>
-
-            <div className="flex flex-col items-center">
-              <h2 className="text-xl font-bold mb-4 text-blue-400">Fighter 2</h2>
-              {player2 ? (
-                <div className="w-48">
-                  <CharacterCard 
-                    character={player2} 
-                    onSelect={() => setSelectingFor(2)} 
-                    selected={selectingFor === 2}
-                  />
-                </div>
-              ) : (
-                <div 
-                  className={`w-48 aspect-[2/3] border-4 border-dashed rounded-lg flex items-center justify-center cursor-pointer transition-colors ${selectingFor === 2 ? 'border-yellow-400 bg-gray-700' : 'border-gray-600 hover:border-gray-500'}`}
-                  onClick={() => setSelectingFor(2)}
-                >
-                  <span className="text-gray-400">Select Fighter 2</span>
-                </div>
-              )}
+            <div className="text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">VS</div>
+            <div className="text-center">
+              <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
+                <img src={player2.imageUrl} alt={player2.name} className="w-full h-full object-cover" />
+              </div>
+              <h2 className="text-2xl font-black mt-4 text-blue-400">{player2.name}</h2>
+              <p className="text-gray-500 text-sm">{player2.universe}</p>
             </div>
           </div>
+          <button onClick={startMatch} className="bg-gradient-to-r from-red-600 to-yellow-500 text-white py-4 px-16 rounded-full font-black text-2xl tracking-widest hover:scale-110 transition-all shadow-[0_0_30px_rgba(220,38,38,0.5)] animate-pulse">
+            ⚔️ FIGHT! ⚔️
+          </button>
+          <button onClick={resetSelection} className="mt-6 text-gray-500 hover:text-white underline text-sm">← Change Fighters</button>
         </div>
+      </main>
+    );
+  }
 
-        {/* Character Selection Grid */}
-        <section className="mb-16">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-3xl font-bold">Choose your Fighters</h2>
-            <div className="text-gray-400">
-              Selecting for <span className="text-yellow-400 font-bold">Fighter {selectingFor}</span>
+  // Character Select Screen
+  return (
+    <main className="min-h-screen bg-gray-900 text-white">
+      {/* Header */}
+      <div className="bg-gradient-to-b from-gray-800 to-gray-900 border-b border-gray-700 p-4 sticky top-0 z-50">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-3">
+            <h1 className="text-2xl font-black italic text-transparent bg-clip-text bg-gradient-to-r from-red-500 to-yellow-500">
+              🎮 DREAM MATCHES
+            </h1>
+            <div className="flex items-center gap-4">
+              <span className="text-xs font-bold text-gray-400">
+                {player1 ? `P1: ${player1.name}` : 'Select P1'} | {player2 ? `P2: ${player2.name}` : 'Select P2'}
+              </span>
             </div>
           </div>
-          
-          <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-6">
-            {characters.map((char) => (
-              <CharacterCard 
-                key={char.id} 
-                character={char} 
-                onSelect={handleSelect}
-                selected={player1?.id === char.id || player2?.id === char.id}
-              />
+          {/* Category Tabs */}
+          <div className="flex gap-1 flex-wrap">
+            {CATEGORIES.map(cat => (
+              <button key={cat} onClick={() => setCategory(cat)}
+                className={`px-4 py-1.5 rounded-lg text-xs font-bold transition-all ${category === cat ? 'bg-yellow-500 text-black' : 'bg-gray-700 text-gray-300 hover:bg-gray-600'}`}>
+                {cat} {cat === 'All' ? `(${characters.length})` : `(${characters.filter(c => c.category === cat).length})`}
+              </button>
             ))}
           </div>
-        </section>
+          {/* Search */}
+          <input type="text" placeholder="🔍 Search fighters..." value={search} onChange={e => setSearch(e.target.value)}
+            className="mt-3 w-full bg-gray-800 border border-gray-600 rounded-lg px-4 py-2 text-sm text-white focus:outline-none focus:border-yellow-500" />
+        </div>
+      </div>
 
-        <SuggestMatch />
-
-        {/* Storylines Preview */}
-        <section className="mt-20 mb-16">
-          <div className="flex justify-between items-end mb-8">
-            <h2 className="text-3xl font-bold italic">ACTIVE STORYLINES</h2>
-            <Link href="/storylines" className="text-yellow-500 hover:underline font-bold">VIEW ALL →</Link>
+      {/* Selected Fighters Bar */}
+      {(player1 || player2) && (
+        <div className="bg-gray-800/80 border-b border-gray-700 p-3 flex items-center justify-center gap-4">
+          <div className="flex items-center gap-3">
+            {player1 && <span className="text-red-400 font-bold text-sm">{player1.name}</span>}
+            <span className="text-yellow-500 font-black">VS</span>
+            {player2 && <span className="text-blue-400 font-bold text-sm">{player2.name}</span>}
           </div>
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-            {storylines.slice(0, 2).map(s => (
-              <Link 
-                key={s.id} 
-                href={`/storylines/${s.id}`}
-                className="bg-gray-800 p-8 rounded-2xl border border-gray-700 hover:border-red-500 transition-all group"
-              >
-                <span className="text-xs font-bold text-yellow-500 uppercase tracking-widest mb-2 block">{s.type}</span>
-                <h3 className="text-2xl font-bold mb-4 group-hover:text-red-500 transition-colors">{s.title}</h3>
-                <p className="text-gray-400 text-sm line-clamp-2 mb-4">{s.description}</p>
-                <div className="flex items-center text-xs font-bold text-gray-500">
-                  <span className="w-2 h-2 bg-green-500 rounded-full mr-2"></span>
-                  {s.status.toUpperCase()}
+          {player1 && player2 && (
+            <button onClick={() => setShowSelect(false)} className="bg-red-600 hover:bg-red-500 text-white px-6 py-1.5 rounded-full font-bold text-sm ml-4">
+              CONFIRM MATCH
+            </button>
+          )}
+        </div>
+      )}
+
+      {/* Character Grid — Game Style */}
+      <div className="p-4">
+        <div className="max-w-7xl mx-auto">
+          <div className="flex items-center justify-between mb-4">
+            <p className="text-sm text-gray-500 font-bold">
+              {selectingFor === 'p1' ? '🎮 SELECT FIGHTER 1' : '🎮 SELECT FIGHTER 2'}
+            </p>
+            <p className="text-xs text-gray-600">{filtered.length} fighters</p>
+          </div>
+          <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
+            {filtered.map(char => {
+              const isP1 = player1?.id === char.id;
+              const isP2 = player2?.id === char.id;
+              const isSelected = isP1 || isP2;
+              return (
+                <div key={char.id} onClick={() => !isSelected && handleSelect(char)}
+                  className={`group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
+                    isSelected ? 'ring-2 ring-yellow-400 scale-105 z-10' : 'hover:ring-2 hover:ring-white/50 hover:scale-105'
+                  } ${isP1 ? 'ring-red-500' : isP2 ? 'ring-blue-500' : ''}`}>
+                  <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" loading="lazy" />
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
+                  <div className="absolute bottom-0 left-0 right-0 p-1.5">
+                    <p className="text-[10px] font-bold truncate leading-tight">{char.name}</p>
+                    <p className="text-[8px] text-gray-400 truncate">{char.universe}</p>
+                  </div>
+                  {isP1 && <div className="absolute top-1 left-1 bg-red-600 text-[8px] font-black px-1 rounded">P1</div>}
+                  {isP2 && <div className="absolute top-1 left-1 bg-blue-600 text-[8px] font-black px-1 rounded">P2</div>}
                 </div>
-              </Link>
-            ))}
+              );
+            })}
           </div>
-        </section>
+          {filtered.length === 0 && (
+            <div className="text-center py-20 text-gray-500">
+              <p className="text-2xl mb-2">🔍</p>
+              <p>No fighters found matching "{search}"</p>
+            </div>
+          )}
+        </div>
       </div>
     </main>
   );
