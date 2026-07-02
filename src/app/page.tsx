@@ -32,15 +32,9 @@ export default function Home() {
     }
   };
 
-  const startMatch = async () => {
+  const startMatch = () => {
     if (player1 && player2) {
-      const res = await fetch('/api/match/generate', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ player1Id: player1.id, player2Id: player2.id }),
-      });
-      const data = await res.json();
-      if (data.matchId) router.push(`/match/${data.matchId}`);
+      router.push(`/fight?p1=${player1.id}&p2=${player2.id}`);
     }
   };
 
