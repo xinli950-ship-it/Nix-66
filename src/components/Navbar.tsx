@@ -8,6 +8,9 @@ export default function Navbar() {
           DREAM MATCHES
         </Link>
         <div className="flex gap-6 items-center">
+          <Link href="/fight" className="text-yellow-400 hover:text-yellow-300 font-bold transition-colors">
+            ⚔️ PLAY
+          </Link>
           <Link href="/storylines" className="text-gray-300 hover:text-white font-bold transition-colors">
             STORYLINES
           </Link>

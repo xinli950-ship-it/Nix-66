@@ -8,3 +8,8 @@ build/
 next-env.d.ts
 public/matches/
 public/references/
+# Python roster scripts
+*.py
+# Backup/duplicate character data
+src/data/characters2.ts
+src/data/characters_backup.ts
