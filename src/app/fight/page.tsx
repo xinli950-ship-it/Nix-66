@@ -121,6 +121,55 @@ export default function FightPage() {
     return list;
   }, [category, search]);
 
+  // ─── Audio System ─────────────────────────────────────────────
+  const [isMuted, setIsMuted] = useState(false);
+  const bgmRef = useRef<HTMLAudioElement | null>(null);
+  const sfxRef = useRef<HTMLAudioElement | null>(null);
+
+  const playSfx = useCallback((type: 'punch' | 'kick' | 'special' | 'blast' | 'slam' | 'ultimate' | 'block' | 'hit') => {
+    if (isMuted) return;
+    try {
+      const sfx = new Audio();
+      sfx.volume = 0.3;
+      const sounds: Record<string, string> = {
+        punch: 'https://cdn.freesound.org/previews/277/277022_5259851-lq.mp3',
+        kick: 'https://cdn.freesound.org/previews/277/277024_5259851-lq.mp3',
+        special: 'https://cdn.freesound.org/previews/253/253172_4491572-lq.mp3',
+        blast: 'https://cdn.freesound.org/previews/352/352876_6348830-lq.mp3',
+        slam: 'https://cdn.freesound.org/previews/521/521974_10065341-lq.mp3',
+        ultimate: 'https://cdn.freesound.org/previews/415/415762_5121236-lq.mp3',
+        block: 'https://cdn.freesound.org/previews/277/277025_5259851-lq.mp3',
+        hit: 'https://cdn.freesound.org/previews/277/277023_5259851-lq.mp3',
+      };
+      sfx.src = sounds[type] || sounds.punch;
+      sfx.play().catch(() => {});
+      sfxRef.current = sfx;
+    } catch {}
+  }, [isMuted]);
+
+  useEffect(() => {
+    if (isMuted) {
+      if (bgmRef.current) { bgmRef.current.pause(); bgmRef.current = null; }
+      return;
+    }
+    if (!player1 && !player2) return;
+    const cats = new Set([player1?.category, player2?.category].filter(Boolean));
+    let musicUrl = 'https://cdn.freesound.org/previews/465/465239_9213299-lq.mp3';
+    if (cats.has('Toku')) musicUrl = 'https://cdn.freesound.org/previews/550/550815_12530325-lq.mp3';
+    else if (cats.has('Anime')) musicUrl = 'https://cdn.freesound.org/previews/514/514762_345459-lq.mp3';
+    else if (cats.has('WWE') || cats.has('AEW')) musicUrl = 'https://cdn.freesound.org/previews/469/469263_9497060-lq.mp3';
+    else if (cats.has('Cartoon')) musicUrl = 'https://cdn.freesound.org/previews/459/459247_9055242-lq.mp3';
+    if (bgmRef.current) bgmRef.current.pause();
+    const bgm = new Audio(musicUrl);
+    bgm.loop = true;
+    bgm.volume = 0.15;
+    bgm.play().catch(() => {});
+    bgmRef.current = bgm;
+    return () => {
+      if (bgmRef.current) { bgmRef.current.pause(); bgmRef.current = null; }
+    };
+  }, [player1, player2, isMuted]);
+
   // ─── Initialize game ──────────────────────────────────────────
 
   const startGame = useCallback(() => {
@@ -262,19 +311,19 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    // O = ultimate super (needs full combo meter)
-                    if (keys.has('o') && !p1.isAttacking && p1.canAct && p1.comboMeter >= p1.maxComboMeter) {
-                      p1.isAttacking = true;
-                      p1.attackType = 'ultimate';
-                      p1.attackTimer = 50;
-                      p1.canAct = false;
-                      p1.comboMeter = 0;
-                      p1.specialCooldown = 300;
-                      if (p1.chargeAmount > 0) {
-                        p1.chargedAttack = true;
-                        p1.chargeAmount = 0;
-                      }
-                    }
+                    // O = ultimate super (needs combo >= 3)
+                                            if (keys.has('o') && !p1.isAttacking && p1.canAct && p1.combo >= 3) {
+                                              p1.isAttacking = true;
+                                              p1.attackType = 'ultimate';
+                                              p1.attackTimer = 50;
+                                              p1.canAct = false;
+                                              p1.combo = 0;
+                                              p1.specialCooldown = 300;
+                                              if (p1.chargeAmount > 0) {
+                                                p1.chargedAttack = true;
+                                                p1.chargeAmount = 0;
+                                              }
+                                            }
       }
 
       // ── AI for P2 ──
@@ -302,13 +351,13 @@ export default function FightPage() {
         // AI decision making
         if (dist < 100 && !p2.isAttacking) {
           const roll = Math.random();
-          if (roll < 0.25 && p2.comboMeter >= p2.maxComboMeter) {
-            p2.isAttacking = true;
-            p2.attackType = 'ultimate';
-            p2.attackTimer = 50;
-            p2.canAct = false;
-            p2.comboMeter = 0;
-            p2.specialCooldown = 300;
+          if (roll < 0.25 && p2.combo >= 3) {
+                          p2.isAttacking = true;
+                          p2.attackType = 'ultimate';
+                          p2.attackTimer = 50;
+                          p2.canAct = false;
+                          p2.combo = 0;
+                          p2.specialCooldown = 300;
           } else if (roll < 0.4 && p2.specialCooldown <= 0) {
             p2.isAttacking = true;
             p2.attackType = 'special';
@@ -375,7 +424,7 @@ export default function FightPage() {
         if (attacker.attackType === 'special') reach = 120;
         else if (attacker.attackType === 'kick') reach = 80;
         else if (attacker.attackType === 'blast') reach = 200;
-        else if (attacker.attackType === 'slam') reach = 100;
+        else if (attacker.attackType === 'slam') reach = 140;
         else if (attacker.attackType === 'ultimate') reach = 250;
 
         // Blast and Ultimate are ranged - no facing check needed
@@ -413,7 +462,14 @@ export default function FightPage() {
                     p1.chargedAttack = false;
                   }
 
-        if (p2.isBlocking) dmg = Math.floor(dmg * 0.3);
+        if (p2.isBlocking) {
+            dmg = Math.floor(dmg * 0.3);
+            playSfx('block');
+          } else {
+            // Play attack SFX based on type
+            const sfxType = p1.attackType as any;
+            playSfx(sfxType || 'punch');
+          }
 
         p2.hp = Math.max(0, p2.hp - dmg);
         p2.hitTimer = 10;
@@ -465,7 +521,13 @@ export default function FightPage() {
                   else if (p2.attackType === 'slam') dmg = 18;
                   else if (p2.attackType === 'ultimate') dmg = 40;
 
-        if (p1.isBlocking) dmg = Math.floor(dmg * 0.3);
+        if (p1.isBlocking) {
+            dmg = Math.floor(dmg * 0.3);
+            playSfx('block');
+          } else {
+            const sfxType = p2.attackType as any;
+            playSfx(sfxType || 'punch');
+          }
 
         p1.hp = Math.max(0, p1.hp - dmg);
         p1.hitTimer = 10;
@@ -1230,6 +1292,12 @@ export default function FightPage() {
               <p className="text-gray-500 text-xs mt-3">
                 WASD: Move | J: Punch | K: Kick | L: Special | U: Blast | I: Slam | O: Ultimate | S: Block | Enter: Charge
               </p>
+              <button
+                onClick={() => setIsMuted(!isMuted)}
+                className={`mt-2 px-4 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+              >
+                {isMuted ? '🔇 Sound OFF' : '🔊 Sound ON'}
+              </button>
             </div>
           )}
         </div>
@@ -1249,6 +1317,12 @@ export default function FightPage() {
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
           <p>WASD: Move | J: Punch | K: Kick | L: Special | U: Blast | I: Slam | O: Ultimate | S: Block | Enter: Charge</p>
+          <button
+            onClick={() => setIsMuted(!isMuted)}
+            className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+          >
+            {isMuted ? '🔇 Muted' : '🔊 Sound'}
+          </button>
         </div>
       </main>
     );
