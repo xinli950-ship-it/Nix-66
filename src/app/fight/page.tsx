@@ -233,18 +233,32 @@ export default function FightPage() {
   }, [player1, player2]);
 
   // ─── URL deep link (?p1=&p2=) — auto-start a match ────────────
+  // No grid ever: with picks, fight those two; without picks, instantly
+  // generate a random dream match (different categories) and start it.
   useEffect(() => {
     const params = new URLSearchParams(window.location.search);
     const p1id = params.get('p1');
     const p2id = params.get('p2');
+    let c1: Character | undefined;
+    let c2: Character | undefined;
     if (p1id && p2id) {
-      const c1 = characters.find((c) => String(c.id) === p1id);
-      const c2 = characters.find((c) => String(c.id) === p2id);
-      if (c1 && c2) {
-        setPlayer1(c1);
-        setPlayer2(c2);
-        autoStartRef.current = true;
-      }
+      c1 = characters.find((c) => String(c.id) === p1id);
+      c2 = characters.find((c) => String(c.id) === p2id);
+    }
+    if (!c1 || !c2) {
+      const cats = ['Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'];
+      const cat1 = cats[Math.floor(Math.random() * cats.length)];
+      let cat2 = cats[Math.floor(Math.random() * cats.length)];
+      if (cat2 === cat1) cat2 = cats[(cats.indexOf(cat1) + 1 + Math.floor(Math.random() * (cats.length - 1))) % cats.length];
+      const pool1 = characters.filter((c) => c.category === cat1);
+      const pool2 = characters.filter((c) => c.category === cat2);
+      if (pool1.length) c1 = pool1[Math.floor(Math.random() * pool1.length)];
+      if (pool2.length) c2 = pool2[Math.floor(Math.random() * pool2.length)];
+    }
+    if (c1 && c2) {
+      setPlayer1(c1);
+      setPlayer2(c2);
+      autoStartRef.current = true;
     }
   }, []);
 
