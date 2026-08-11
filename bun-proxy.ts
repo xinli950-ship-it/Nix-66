@@ -1,6 +1,11 @@
 // @ts-nocheck - standalone Bun runtime script, not part of the Next.js bundle
 // Bun reverse proxy: port 3000 (public) -> 3001 (Next.js)
 // Keeps the public surface on port 3000 while Next runs on 3001.
+//
+// IMPORTANT: return the upstream Response object AS-IS. Reconstructing a new
+// Response (even copying headers) corrupts compressed/streaming bodies —
+// Next's prerender cache can serve Content-Encoding: gzip with the encoding
+// mismatch, which browsers cannot inflate (renders as an empty page).
 const TARGET = 'http://127.0.0.1:3001';
 
 const server = Bun.serve({
@@ -16,16 +21,8 @@ const server = Bun.serve({
         body: req.method === 'GET' || req.method === 'HEAD' ? undefined : await req.arrayBuffer(),
         redirect: 'manual',
       });
-      // Copy headers, dropping hop-by-hop ones
-      const headers = new Headers(res.headers);
-      headers.delete('connection');
-      headers.delete('keep-alive');
-      headers.delete('transfer-encoding');
-      return new Response(res.body, {
-        status: res.status,
-        statusText: res.statusText,
-        headers,
-      });
+      // Pass through untouched — preserves Content-Encoding, chunked streaming, etag, etc.
+      return res;
     } catch (e) {
       return new Response(`Proxy error: ${(e as Error).message}`, { status: 502 });
     }
