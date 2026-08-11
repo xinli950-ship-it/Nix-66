@@ -337,19 +337,26 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    if (keys.has('l') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
+                    // L = Jump (quick hop)
+                    if (keys.has('l') && !p1.isAttacking && p1.canAct) {
+                      p1.vy = -6.5;
+                    }
+                    // S+U = Finisher 1 (hold S, press U)
+                    if (keys.has('s') && keys.has('u') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
-                      p1.attackType = 'special';
-                      p1.attackTimer = 30;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 55;
                       p1.canAct = false;
-                      p1.specialCooldown = 180;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.blastCooldown = 300;
                       if (p1.chargeAmount > 0) {
                         p1.chargedAttack = true;
                         p1.chargeAmount = 0;
                       }
                     }
-                    // U = ranged energy blast
-                    if (keys.has('u') && !p1.isAttacking && p1.canAct && p1.blastCooldown <= 0) {
+                    // U = Super (ranged energy blast)
+                    else if (keys.has('u') && !p1.isAttacking && p1.canAct && p1.blastCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'blast';
                       p1.attackTimer = 25;
@@ -360,8 +367,22 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    // I = ground slam AOE
-                    if (keys.has('i') && !p1.isAttacking && p1.canAct && p1.slamCooldown <= 0) {
+                    // S+I = Finisher 2
+                    if (keys.has('s') && keys.has('i') && !p1.isAttacking && p1.canAct) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 60;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.slamCooldown = 300;
+                      if (p1.chargeAmount > 0) {
+                        p1.chargedAttack = true;
+                        p1.chargeAmount = 0;
+                      }
+                    }
+                    // I = Ultra (ground slam AOE)
+                    else if (keys.has('i') && !p1.isAttacking && p1.canAct && p1.slamCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'slam';
                       p1.attackTimer = 35;
@@ -372,19 +393,29 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    // O = ultimate super (needs combo >= 3)
-                                            if (keys.has('o') && !p1.isAttacking && p1.canAct && p1.combo >= 3) {
-                                              p1.isAttacking = true;
-                                              p1.attackType = 'ultimate';
-                                              p1.attackTimer = 50;
-                                              p1.canAct = false;
-                                              p1.combo = 0;
-                                              p1.specialCooldown = 300;
-                                              if (p1.chargeAmount > 0) {
-                                                p1.chargedAttack = true;
-                                                p1.chargeAmount = 0;
-                                              }
-                                            }
+                    // S+O = Finisher 3 (final finisher)
+                    if (keys.has('s') && keys.has('o') && !p1.isAttacking && p1.canAct) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 70;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.chargeAmount = 0;
+                    }
+                    // O = Transform (ultimate, no combo gate)
+                    else if (keys.has('o') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 50;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      if (p1.chargeAmount > 0) {
+                        p1.chargedAttack = true;
+                        p1.chargeAmount = 0;
+                      }
+                    }
       }
 
       // ── AI for P2 ──
@@ -1374,7 +1405,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Special | U: Blast | I: Slam | O: Ultimate | S: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | S: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1400,7 +1431,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Special | U: Blast | I: Slam | O: Ultimate | S: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | S: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
