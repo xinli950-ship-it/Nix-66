@@ -395,17 +395,20 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    // S+O = Finisher 3 (final finisher)
-                    if (keys.has('s') && keys.has('o') && !p1.isAttacking && p1.canAct) {
+                    // S+O = Transform (S and O together — owner's scheme)
+                    if (keys.has('s') && keys.has('o') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
-                      p1.attackTimer = 70;
+                      p1.attackTimer = 50;
                       p1.canAct = false;
                       p1.combo = 0;
                       p1.specialCooldown = 300;
-                      p1.chargeAmount = 0;
+                      if (p1.chargeAmount > 0) {
+                        p1.chargedAttack = true;
+                        p1.chargeAmount = 0;
+                      }
                     }
-                    // O = Transform (ultimate, no combo gate)
+                    // O alone = also Transform (backward compatible)
                     else if (keys.has('o') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
@@ -417,6 +420,16 @@ export default function FightPage() {
                         p1.chargedAttack = true;
                         p1.chargeAmount = 0;
                       }
+                    }
+                    // S+K = Finisher 3 (final finisher — S+O is now Transform)
+                    if (keys.has('s') && keys.has('k') && !p1.isAttacking && p1.canAct) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 70;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.chargeAmount = 0;
                     }
       }
 
@@ -1407,7 +1420,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | P: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | S+U/S+I/S+K: Finishers | P: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1433,7 +1446,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | P: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | S+U/S+I/S+K: Finishers | P: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
