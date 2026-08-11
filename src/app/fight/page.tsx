@@ -41,6 +41,10 @@ interface FighterState {
   finisher: string;
   finisherColor: string;
   finisherType: string;
+  finisherType2: string;
+  finisherType3: string;
+  finisherType4: string;
+  finisherTypeActive: string;
   finisher2: string;
   finisher3: string;
   finisher4: string;
@@ -90,6 +94,10 @@ function createFighter(
     finisher: char.finisher,
     finisherColor: char.finisherColor,
     finisherType: char.finisherType,
+    finisherType2: char.finisherType2,
+    finisherType3: char.finisherType3,
+    finisherType4: char.finisherType4,
+    finisherTypeActive: char.finisherType,
     finisher2: char.finisher2,
     finisher3: char.finisher3,
     finisher4: char.finisher4,
@@ -441,6 +449,7 @@ export default function FightPage() {
                     if (keys.has('s') && keys.has('k') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
+                      p1.finisherTypeActive = p1.finisherType;
                       p1.attackTimer = 70;
                       p1.canAct = false;
                       p1.combo = 0;
@@ -455,6 +464,7 @@ export default function FightPage() {
                     if (keys.has('n') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
+                      p1.finisherTypeActive = p1.finisherType;
                       p1.attackTimer = 70;
                       p1.canAct = false;
                       p1.combo = 0;
@@ -469,6 +479,7 @@ export default function FightPage() {
                     if (keys.has('m') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
+                      p1.finisherTypeActive = p1.finisherType2;
                       p1.attackTimer = 70;
                       p1.canAct = false;
                       p1.combo = 0;
@@ -483,6 +494,7 @@ export default function FightPage() {
                     if (keys.has(',') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
+                      p1.finisherTypeActive = p1.finisherType3;
                       p1.attackTimer = 70;
                       p1.canAct = false;
                       p1.combo = 0;
@@ -497,6 +509,7 @@ export default function FightPage() {
                     if (keys.has('.') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
+                      p1.finisherTypeActive = p1.finisherType4;
                       p1.attackTimer = 70;
                       p1.canAct = false;
                       p1.combo = 0;
@@ -1175,7 +1188,7 @@ export default function FightPage() {
       // Ultimate effect - golden energy explosion
                 if (f.attackType === 'ultimate') {
                   const finColor = f.finisherColor || '#facc15';
-                  const ft = f.finisherType || 'nova';
+                  const ft = f.finisherTypeActive || f.finisherType || 'nova';
                   const dirF = f.facing;
                   const bx = cx + w / 2;
                   const by = cy + 36;
