@@ -38,6 +38,7 @@ interface FighterState {
   color: string;
   finisher: string;
   finisherColor: string;
+  finisherType: string;
   imageUrl: string;
   scale: number;
 }
@@ -81,6 +82,7 @@ function createFighter(
     color,
     finisher: char.finisher,
     finisherColor: char.finisherColor,
+    finisherType: char.finisherType,
     imageUrl: char.imageUrl,
     scale: 1,
   };
@@ -1063,6 +1065,71 @@ export default function FightPage() {
       // Ultimate effect - golden energy explosion
                 if (f.attackType === 'ultimate') {
                   const finColor = f.finisherColor || '#facc15';
+                  const ft = f.finisherType || 'nova';
+                  const dirF = f.facing;
+                  const bx = cx + w / 2;
+                  const by = cy + 36;
+                  const t = Math.max(0, 50 - f.attackTimer);
+                  // BEAM - energy column blasts across the screen
+                  if (ft === 'beam') {
+                    const grow = t * 1.6;
+                    ctx.globalAlpha = 0.4; ctx.fillStyle = finColor; ctx.shadowColor = finColor; ctx.shadowBlur = 40;
+                    ctx.fillRect(dirF === 1 ? bx : bx - grow, by - 16, grow, 32);
+                    ctx.globalAlpha = 0.85; ctx.fillStyle = '#ffffff';
+                    ctx.fillRect(dirF === 1 ? bx : bx - grow, by - 8, grow, 16);
+                    ctx.beginPath(); ctx.arc(dirF === 1 ? bx + grow : bx - grow, by, 18 + t * 0.3, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 0.6; ctx.fillStyle = finColor;
+                    for (let i = 0; i < 6; i++) {
+                      const px = dirF === 1 ? bx + grow * 0.4 + i * 14 : bx - grow * 0.4 - i * 14;
+                      const py = by - 24 + (i % 3) * 16;
+                      ctx.fillRect(px, py, 9, 9);
+                    }
+                    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                  } else if (ft === 'rush') {
+                    // RUSH - afterimage dash flurry
+                    for (let i = 0; i < 6; i++) {
+                      const pr = Math.min(1, Math.max(0, (t - i * 5) / 30));
+                      if (pr <= 0) continue;
+                      const gx = bx + dirF * pr * 170;
+                      const gy = by - pr * 46;
+                      ctx.globalAlpha = 0.6 - pr * 0.45;
+                      ctx.fillStyle = finColor; ctx.shadowColor = finColor; ctx.shadowBlur = 25;
+                      ctx.fillRect(gx - 13, gy - 22, 26, 42);
+                    }
+                    ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 0;
+                    for (let i = 0; i < 5; i++) {
+                      const a = (i / 5) * Math.PI * 2 + t * 0.5;
+                      ctx.beginPath(); ctx.arc(bx + dirF * 170 + Math.cos(a) * 14, by - 30 + Math.sin(a) * 14, 5 + t * 0.15, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.globalAlpha = 1;
+                  } else if (ft === 'slam') {
+                    // SLAM - leap up, slam down, ground shockwave
+                    const rise = Math.max(0, 26 - t);
+                    const sy = by - rise;
+                    ctx.globalAlpha = 0.8; ctx.fillStyle = finColor; ctx.shadowColor = finColor; ctx.shadowBlur = 30;
+                    ctx.fillRect(bx - 9, sy - 42, 18, 84);
+                    for (let i = 0; i < 3; i++) {
+                      const r = Math.max(0, (t - i * 7)) * 3.2;
+                      ctx.globalAlpha = 0.5 - i * 0.13;
+                      ctx.strokeStyle = finColor; ctx.lineWidth = 6;
+                      ctx.beginPath(); ctx.arc(bx, cy + h - 6, r, 0, Math.PI * 2); ctx.stroke();
+                    }
+                    ctx.globalAlpha = 0.7; ctx.fillStyle = '#ffffff'; ctx.shadowBlur = 0;
+                    ctx.beginPath(); ctx.arc(bx, cy + h - 6, 12 + t * 0.6, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1;
+                  } else if (ft === 'cyclone') {
+                    // CYCLONE - spinning energy vortex
+                    ctx.globalAlpha = 0.55; ctx.fillStyle = finColor; ctx.shadowColor = finColor; ctx.shadowBlur = 30;
+                    for (let i = 0; i < 9; i++) {
+                      const a = (i / 9) * Math.PI * 2 + t * 0.45;
+                      const r = 18 + t * (0.5 + 0.5 * Math.abs(Math.sin(i * 1.7)));
+                      ctx.beginPath(); ctx.arc(bx + Math.cos(a) * r, by + Math.sin(a) * r, 9 + t * 0.2, 0, Math.PI * 2); ctx.fill();
+                    }
+                    ctx.globalAlpha = 0.9; ctx.fillStyle = '#ffffff';
+                    ctx.beginPath(); ctx.arc(bx, by, 12 + t * 0.15, 0, Math.PI * 2); ctx.fill();
+                    ctx.globalAlpha = 1; ctx.shadowBlur = 0;
+                  } else {
+                  // NOVA - full explosion
                   ctx.fillStyle = finColor;
                   ctx.shadowColor = finColor;
                   ctx.shadowBlur = 30;
@@ -1117,6 +1184,7 @@ export default function FightPage() {
                   }
                   ctx.shadowBlur = 0;
                   ctx.globalAlpha = 1;
+                }
                 }
     } else {
       // Normal arm position
