@@ -4,7 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { characters, Character } from '@/data/characters';
 
-const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku'] as const;
+const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 
 // ─── Game Types ────────────────────────────────────────────────
 
@@ -110,6 +110,12 @@ export default function FightPage() {
   const [search, setSearch] = useState('');
   const [resultText, setResultText] = useState('');
   const [generatingReplay, setGeneratingReplay] = useState(false);
+  const [visibleCount, setVisibleCount] = useState(60);
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(60);
+  }, [category, search]);
 
   const filtered = useMemo(() => {
     let list = characters;
@@ -1139,6 +1145,7 @@ export default function FightPage() {
     setSelectingFor('p1');
     setSearch('');
     setCategory('All');
+    setVisibleCount(60);
     setGamePhase('select');
     setResultText('');
   };
@@ -1183,6 +1190,7 @@ export default function FightPage() {
                   <img
                     src={player1.imageUrl}
                     alt={player1.name}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -1202,6 +1210,7 @@ export default function FightPage() {
                   <img
                     src={player2.imageUrl}
                     alt={player2.name}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 ) : (
@@ -1244,9 +1253,14 @@ export default function FightPage() {
             />
           </div>
 
-          {/* Character grid */}
+          {/* Character count */}
+          <p className="text-center text-xs text-gray-500 mb-3">
+            Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} fighters
+          </p>
+
+          {/* Character grid — windowed for performance */}
           <div className="grid grid-cols-4 sm:grid-cols-6 md:grid-cols-8 lg:grid-cols-10 gap-3">
-            {filtered.map((char) => (
+            {filtered.slice(0, visibleCount).map((char) => (
               <button
                 key={char.id}
                 onClick={() => handleSelect(char)}
@@ -1262,6 +1276,8 @@ export default function FightPage() {
                   <img
                     src={char.imageUrl}
                     alt={char.name}
+                    loading="lazy"
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1276,6 +1292,18 @@ export default function FightPage() {
               </button>
             ))}
           </div>
+
+          {/* Load More button */}
+          {visibleCount < filtered.length && (
+            <div className="text-center mt-6 mb-8">
+              <button
+                onClick={() => setVisibleCount((prev) => prev + 60)}
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition-all"
+              >
+                Load More ({filtered.length - visibleCount} remaining)
+              </button>
+            </div>
+          )}
 
           {/* Start fight button */}
           {player1 && player2 && (
@@ -1343,6 +1371,7 @@ export default function FightPage() {
                   <img
                     src={player1.imageUrl}
                     alt={player1.name}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
@@ -1356,6 +1385,7 @@ export default function FightPage() {
                   <img
                     src={player2.imageUrl}
                     alt={player2.name}
+                    decoding="async"
                     className="w-full h-full object-cover"
                   />
                 </div>
