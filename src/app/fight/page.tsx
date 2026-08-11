@@ -36,6 +36,8 @@ interface FighterState {
         chargedAttack: boolean;
         name: string;
   color: string;
+  finisher: string;
+  finisherColor: string;
   imageUrl: string;
   scale: number;
 }
@@ -77,6 +79,8 @@ function createFighter(
             chargedAttack: false,
             name: char.name,
     color,
+    finisher: char.finisher,
+    finisherColor: char.finisherColor,
     imageUrl: char.imageUrl,
     scale: 1,
   };
@@ -421,7 +425,7 @@ export default function FightPage() {
                         p1.chargeAmount = 0;
                       }
                     }
-                    // S+K = Finisher 3 (final finisher — S+O is now Transform)
+                    // S+K = Finisher (character's own signature finisher)
                     if (keys.has('s') && keys.has('k') && !p1.isAttacking && p1.canAct) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
@@ -430,6 +434,10 @@ export default function FightPage() {
                       p1.combo = 0;
                       p1.specialCooldown = 300;
                       p1.chargeAmount = 0;
+                      if (gameRef.current) {
+                        gameRef.current.announcer = (p1.finisher || 'FINISHER').toUpperCase() + '!';
+                        gameRef.current.announcerTimer = 80;
+                      }
                     }
       }
 
@@ -1054,11 +1062,12 @@ export default function FightPage() {
 
       // Ultimate effect - golden energy explosion
                 if (f.attackType === 'ultimate') {
-                  ctx.fillStyle = '#facc15';
-                  ctx.shadowColor = '#facc15';
+                  const finColor = f.finisherColor || '#facc15';
+                  ctx.fillStyle = finColor;
+                  ctx.shadowColor = finColor;
                   ctx.shadowBlur = 30;
                   ctx.globalAlpha = 0.5;
-                  // Outer blast - gold
+                  // Outer blast - finisher color
                   ctx.beginPath();
                   ctx.arc(
                     cx + w / 2,
@@ -1068,9 +1077,9 @@ export default function FightPage() {
                     Math.PI * 2
                   );
                   ctx.fill();
-                  // Inner blast - bright gold
-                  ctx.fillStyle = '#fbbf24';
-                  ctx.shadowColor = '#fbbf24';
+                  // Inner blast - bright finisher color
+                  ctx.fillStyle = finColor;
+                  ctx.shadowColor = finColor;
                   ctx.shadowBlur = 40;
                   ctx.globalAlpha = 0.7;
                   ctx.beginPath();
