@@ -20,9 +20,11 @@ interface FighterState {
   height: number;
   facing: 1 | -1;
   isAttacking: boolean;
-  attackType: 'punch' | 'kick' | 'special' | 'blast' | 'slam' | 'ultimate' | null;
+  attackType: 'punch' | 'kick' | 'special' | 'blast' | 'slam' | 'ultimate' | 'grab' | null;
   attackTimer: number;
   hitTimer: number;
+  isGrabbed: boolean;
+  grabHit: boolean;
   combo: number;
   canAct: boolean;
   isBlocking: boolean;
@@ -68,6 +70,8 @@ function createFighter(
     attackType: null,
     attackTimer: 0,
     hitTimer: 0,
+    isGrabbed: false,
+    grabHit: false,
     combo: 0,
     canAct: true,
     isBlocking: false,
@@ -471,6 +475,25 @@ export default function FightPage() {
                         gameRef.current.announcerTimer = 80;
                       }
                     }
+                    // ; = Grab (throw)
+                    if (keys.has(';') && !p1.isAttacking && p1.canAct) {
+                      const gDist = Math.abs(p2.x - p1.x);
+                      if (gDist < 85 && Math.abs(p2.y - p1.y) < 65) {
+                        p1.isAttacking = true;
+                        p1.attackType = 'grab';
+                        p1.attackTimer = 45;
+                        p1.canAct = false;
+                        p2.isGrabbed = true;
+                        p2.canAct = false;
+                        p2.grabHit = false;
+                        p2.vx = 0;
+                        p2.vy = 0;
+                        if (gameRef.current) {
+                          gameRef.current.announcer = 'GRAB!';
+                          gameRef.current.announcerTimer = 40;
+                        }
+                      }
+                    }
       }
 
       // ── AI for P2 ──
@@ -729,6 +752,31 @@ export default function FightPage() {
         if (p2.attackTimer === 0) {
           p2.isAttacking = false;
           p2.attackType = null;
+          p2.canAct = true;
+        }
+      }
+
+      // Grab mechanics: grabbed fighter sticks to the grabber, thrown at the peak
+      if (p2.isGrabbed) {
+        if (p1.attackType === 'grab' && !p2.grabHit) {
+          p2.x = p1.x + p1.facing * 52;
+          p2.y = p1.y;
+          p2.vx = 0;
+          p2.vy = 0;
+        }
+        if (p1.attackTimer === 16 && !p2.grabHit) {
+          p2.grabHit = true;
+          p2.hp -= 25;
+          p2.hitTimer = 12;
+          p2.vx = p1.facing * 6;
+          p2.vy = -7;
+          if (gameRef.current) {
+            gameRef.current.announcer = (p1.finisher || 'THROW').toUpperCase() + '!';
+            gameRef.current.announcerTimer = 40;
+          }
+        }
+        if (p1.attackType !== 'grab') {
+          p2.isGrabbed = false;
           p2.canAct = true;
         }
       }
@@ -1221,6 +1269,25 @@ export default function FightPage() {
       ctx.fillRect(cx + 5, cy + 32, 10, 6);
       ctx.fillRect(cx + w - 15, cy + 32, 10, 6);
     }
+      // Grab: glowing extended arm
+      if (f.attackType === 'grab') {
+        ctx.fillStyle = '#fde68a';
+        ctx.shadowColor = '#fde68a';
+        ctx.shadowBlur = 18;
+        ctx.fillRect(f.facing === 1 ? cx + w - 10 : cx + 6, cy + 28, 30, 9);
+        ctx.shadowBlur = 0;
+      }
+      // Grabbed: pulsing lock ring
+      if (f.isGrabbed) {
+        ctx.strokeStyle = '#f87171';
+        ctx.lineWidth = 4;
+        ctx.shadowColor = '#f87171';
+        ctx.shadowBlur = 15;
+        ctx.beginPath();
+        ctx.arc(cx + w / 2, cy + 32, 36 + Math.sin(f.attackTimer * 0.3) * 4, 0, Math.PI * 2);
+        ctx.stroke();
+        ctx.shadowBlur = 0;
+      }
 
     // Legs
     ctx.fillStyle = '#1a1a3a';
@@ -1527,7 +1594,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | P: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | ;: Grab | P: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1553,7 +1620,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | P: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | ;: Grab | P: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
