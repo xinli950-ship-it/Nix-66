@@ -42,6 +42,8 @@ interface FighterState {
   finisherColor: string;
   finisherType: string;
   finisher2: string;
+  finisher3: string;
+  finisher4: string;
   imageUrl: string;
   scale: number;
 }
@@ -89,6 +91,8 @@ function createFighter(
     finisherColor: char.finisherColor,
     finisherType: char.finisherType,
     finisher2: char.finisher2,
+    finisher3: char.finisher3,
+    finisher4: char.finisher4,
     imageUrl: char.imageUrl,
     scale: 1,
   };
@@ -472,6 +476,34 @@ export default function FightPage() {
                       p1.chargeAmount = 0;
                       if (gameRef.current) {
                         gameRef.current.announcer = (p1.finisher2 || p1.finisher || 'FINISHER').toUpperCase() + '!';
+                        gameRef.current.announcerTimer = 80;
+                      }
+                    }
+                    // , = Finisher 3 (third signature move)
+                    if (keys.has(',') && !p1.isAttacking && p1.canAct) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 70;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.chargeAmount = 0;
+                      if (gameRef.current) {
+                        gameRef.current.announcer = (p1.finisher3 || p1.finisher || 'FINISHER').toUpperCase() + '!';
+                        gameRef.current.announcerTimer = 80;
+                      }
+                    }
+                    // . = Finisher 4 (fourth signature move)
+                    if (keys.has('.') && !p1.isAttacking && p1.canAct) {
+                      p1.isAttacking = true;
+                      p1.attackType = 'ultimate';
+                      p1.attackTimer = 70;
+                      p1.canAct = false;
+                      p1.combo = 0;
+                      p1.specialCooldown = 300;
+                      p1.chargeAmount = 0;
+                      if (gameRef.current) {
+                        gameRef.current.announcer = (p1.finisher4 || p1.finisher || 'FINISHER').toUpperCase() + '!';
                         gameRef.current.announcerTimer = 80;
                       }
                     }
@@ -1594,7 +1626,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | ;: Grab | P: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M/,/.: Finishers | ;: Grab | P: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1620,7 +1652,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M: Finishers | ;: Grab | P: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M/,/.: Finishers | ;: Grab | P: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
