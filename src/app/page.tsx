@@ -50,6 +50,20 @@ export default function Home() {
     setSelectingFor('p1');
     setShowSelect(true);
   };
+  const goFight = (a: Character, b: Character) => {
+    router.push(`/fight?p1=${a.id}&p2=${b.id}`);
+  };
+  const surpriseMatch = () => {
+    const cats = ['Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'];
+    const c1 = cats[Math.floor(Math.random() * cats.length)];
+    let c2 = cats[Math.floor(Math.random() * cats.length)];
+    if (c2 === c1) c2 = cats[(cats.indexOf(c1) + 1 + Math.floor(Math.random() * (cats.length - 1))) % cats.length];
+    const a = characters.filter(c => c.category === c1);
+    const b = characters.filter(c => c.category === c2);
+    if (a.length && b.length) goFight(a[Math.floor(Math.random() * a.length)], b[Math.floor(Math.random() * b.length)]);
+  };
+  const featuredA = characters.find(c => c.name === 'Goku') || characters[0];
+  const featuredB = characters.find(c => c.name.toLowerCase().includes('undertaker')) || characters.find(c => c.category === 'WWE') || characters[1];
 
   // VS Screen
   if (!showSelect && player1 && player2) {
@@ -113,6 +127,35 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Featured Dream Match — the action, front and center */}
+      <div className="bg-gradient-to-b from-gray-900 via-red-950/30 to-gray-900 border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-10 text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500 mb-2">⚡ The Dream Match Arena ⚡</p>
+          <h2 className="text-3xl md:text-5xl font-black italic text-white mb-6">WATCH LEGENDS CLASH — INSTANTLY</h2>
+          <div className="flex items-center justify-center gap-4 md:gap-10 mb-8">
+            <div className="text-center">
+              <img src={featuredA.imageUrl} alt={featuredA.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-red-600 shadow-[0_0_25px_rgba(220,38,38,0.5)] object-cover" />
+              <p className="mt-2 text-red-400 font-bold text-sm">{featuredA.name}</p>
+              <p className="text-[10px] text-gray-500">{featuredA.universe}</p>
+            </div>
+            <div className="text-5xl md:text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_12px_rgba(234,179,8,0.5)]">VS</div>
+            <div className="text-center">
+              <img src={featuredB.imageUrl} alt={featuredB.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-blue-600 shadow-[0_0_25px_rgba(59,130,246,0.5)] object-cover" />
+              <p className="mt-2 text-blue-400 font-bold text-sm">{featuredB.name}</p>
+              <p className="text-[10px] text-gray-500">{featuredB.universe}</p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={() => goFight(featuredA, featuredB)} className="bg-gradient-to-r from-red-600 to-yellow-500 text-white px-10 py-4 rounded-full font-black text-xl tracking-wider hover:scale-105 transition-all shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+              ▶ WATCH THIS MATCH
+            </button>
+            <button onClick={surpriseMatch} className="bg-gray-800 hover:bg-gray-700 text-yellow-400 px-10 py-4 rounded-full font-black text-xl tracking-wider hover:scale-105 transition-all border border-yellow-600/40">
+              🎲 SURPRISE ME
+            </button>
+          </div>
+          <p className="mt-6 text-xs text-gray-500">1,920+ fighters · Anime vs Cartoons · WWE vs AEW · Toku vs Toku — or build your own below ↓</p>
+        </div>
+      </div>
       {/* Selected Fighters Bar */}
       {(player1 || player2) && (
         <div className="bg-gray-800/80 border-b border-gray-700 p-3 flex items-center justify-center gap-4">
