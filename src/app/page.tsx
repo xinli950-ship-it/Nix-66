@@ -156,6 +156,28 @@ export default function Home() {
           <p className="mt-6 text-xs text-gray-500">1,920+ fighters · Anime vs Cartoons · WWE vs AEW · Toku vs Toku — or build your own below ↓</p>
         </div>
       </div>
+
+      {/* AI Demo Fight Video */}
+      <div className="bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 border-b border-gray-800">
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <div className="inline-block bg-red-600/20 text-red-400 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1 rounded-full mb-4">🤖 AI Prototype</div>
+          <h2 className="text-2xl md:text-3xl font-black italic text-white mb-2">SEE THE FUTURE: AI-Generated Dream Matches</h2>
+          <p className="text-gray-400 text-sm mb-6 max-w-xl mx-auto">This 5-second clip was generated frame-by-frame using AI image generation — a preview of fully animated dream match videos coming soon.</p>
+          <div className="relative mx-auto max-w-2xl rounded-2xl overflow-hidden border-2 border-yellow-600/50 shadow-[0_0_40px_rgba(234,179,8,0.2)]">
+            <img 
+              src="/videos/demo-fight.gif" 
+              alt="AI-Generated Dream Match Fight Demo" 
+              className="w-full h-auto"
+              style={{ imageRendering: 'auto' }}
+            />
+            <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded">
+              AI PROTOTYPE • 5s
+            </div>
+          </div>
+          <p className="mt-4 text-[11px] text-gray-600">Spiky-haired anime warrior vs dark shadow figure — AI prototype using keyframe generation</p>
+        </div>
+      </div>
+
       {/* Selected Fighters Bar */}
       {(player1 || player2) && (
         <div className="bg-gray-800/80 border-b border-gray-700 p-3 flex items-center justify-center gap-4">
