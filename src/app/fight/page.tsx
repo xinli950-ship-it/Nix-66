@@ -368,7 +368,7 @@ export default function FightPage() {
                       p1.vy = -6.5;
                     }
                     // S+U = Finisher 1 (hold S, press U)
-                    if (keys.has('s') && keys.has('u') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('s') && keys.has('u') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.attackTimer = 55;
@@ -394,7 +394,7 @@ export default function FightPage() {
                       }
                     }
                     // S+I = Finisher 2
-                    if (keys.has('s') && keys.has('i') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('s') && keys.has('i') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.attackTimer = 60;
@@ -446,7 +446,7 @@ export default function FightPage() {
                       }
                     }
                     // S+K = Finisher (character's own signature finisher)
-                    if (keys.has('s') && keys.has('k') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('s') && keys.has('k') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.finisherTypeActive = p1.finisherType;
@@ -461,7 +461,7 @@ export default function FightPage() {
                       }
                     }
                     // N = Finisher 1 (first signature move)
-                    if (keys.has('n') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('n') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.finisherTypeActive = p1.finisherType;
@@ -476,7 +476,7 @@ export default function FightPage() {
                       }
                     }
                     // M = Finisher 2 (second signature move)
-                    if (keys.has('m') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('m') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.finisherTypeActive = p1.finisherType2;
@@ -491,7 +491,7 @@ export default function FightPage() {
                       }
                     }
                     // , = Finisher 3 (third signature move)
-                    if (keys.has(',') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has(',') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.finisherTypeActive = p1.finisherType3;
@@ -506,7 +506,7 @@ export default function FightPage() {
                       }
                     }
                     // . = Finisher 4 (fourth signature move)
-                    if (keys.has('.') && !p1.isAttacking && p1.canAct) {
+                    if (keys.has('.') && !p1.isAttacking && p1.canAct && p1.specialCooldown <= 0) {
                       p1.isAttacking = true;
                       p1.attackType = 'ultimate';
                       p1.finisherTypeActive = p1.finisherType4;
