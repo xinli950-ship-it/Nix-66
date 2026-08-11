@@ -20,11 +20,14 @@ interface FighterState {
   height: number;
   facing: 1 | -1;
   isAttacking: boolean;
-  attackType: 'punch' | 'kick' | 'special' | 'blast' | 'slam' | 'ultimate' | 'grab' | null;
+  attackType: 'punch' | 'kick' | 'special' | 'blast' | 'slam' | 'ultimate' | 'grab' | 'kiss' | null;
   attackTimer: number;
   hitTimer: number;
   isGrabbed: boolean;
   grabHit: boolean;
+  isKissed: boolean;
+  kissDrain: boolean;
+  kissName: string;
   combo: number;
   canAct: boolean;
   isBlocking: boolean;
@@ -78,6 +81,9 @@ function createFighter(
     hitTimer: 0,
     isGrabbed: false,
     grabHit: false,
+    isKissed: false,
+    kissDrain: !!char.kissDrain,
+    kissName: char.kissName || 'KISS',
     combo: 0,
     canAct: true,
     isBlocking: false,
@@ -539,6 +545,25 @@ export default function FightPage() {
                         }
                       }
                     }
+                    // E = Kiss (power drain — Rogue, Poison Ivy)
+                    if (keys.has('e') && !p1.isAttacking && p1.canAct && p1.kissDrain && p1.specialCooldown <= 0) {
+                      const kDist = Math.abs(p2.x - p1.x);
+                      if (kDist < 95 && Math.abs(p2.y - p1.y) < 70) {
+                        p1.isAttacking = true;
+                        p1.attackType = 'kiss';
+                        p1.attackTimer = 44;
+                        p1.canAct = false;
+                        p1.specialCooldown = 300;
+                        p2.isKissed = true;
+                        p2.canAct = false;
+                        p2.vx = 0;
+                        p2.vy = 0;
+                        if (gameRef.current) {
+                          gameRef.current.announcer = (p1.kissName || 'KISS').toUpperCase() + '!';
+                          gameRef.current.announcerTimer = 50;
+                        }
+                      }
+                    }
       }
 
       // ── AI for P2 ──
@@ -822,6 +847,42 @@ export default function FightPage() {
         }
         if (p1.attackType !== 'grab') {
           p2.isGrabbed = false;
+          p2.canAct = true;
+        }
+      }
+
+      // Kiss mechanics: victim locked close, HP + charge drained, attacker heals
+      if (p2.isKissed) {
+        if (p1.attackType === 'kiss') {
+          p2.x = p1.x + p1.facing * 46;
+          p2.y = p1.y + Math.sin(p1.attackTimer * 0.3) * 2;
+          p2.vx = 0;
+          p2.vy = 0;
+          if (p1.attackTimer % 7 === 0 && p1.attackTimer > 0) {
+            p2.hp -= 5;
+            p1.hp = Math.min(100, p1.hp + 3);
+            p2.chargeAmount = 0;
+            p1.chargeAmount = Math.min(100, p1.chargeAmount + 15);
+            p2.hitTimer = 8;
+            if (gameRef.current) {
+              gameRef.current.announcer = (p1.kissName || 'KISS').toUpperCase() + '!';
+              gameRef.current.announcerTimer = 45;
+            }
+            if (p2.hp <= 0 && game.phase === 'fight') {
+              game.phase = 'ko';
+              game.announcer = 'K.O.!';
+              game.announcerTimer = 120;
+              game.winner = 'p1';
+              game.screenShake = 25;
+              setTimeout(() => {
+                if (game) game.phase = 'result';
+                setGamePhase('result');
+                setResultText(`${player1?.name} Wins!`);
+              }, 2000);
+            }
+          }
+        } else {
+          p2.isKissed = false;
           p2.canAct = true;
         }
       }
@@ -1333,6 +1394,44 @@ export default function FightPage() {
         ctx.stroke();
         ctx.shadowBlur = 0;
       }
+      // Kiss: heart + power-drain stream
+      if (f.attackType === 'kiss') {
+        const opp = f === p1 ? p2 : p1;
+        const sx = cx + w / 2;
+        const sy = cy + 30;
+        const tx = opp.x + opp.w / 2;
+        const ty = opp.y + 30;
+        const kc = f.finisherColor || '#f472b6';
+        ctx.globalAlpha = 0.9;
+        for (let i = 0; i < 6; i++) {
+          const ph = (f.attackTimer * 0.05 + i / 6) % 1;
+          const px = sx + (tx - sx) * ph;
+          const py = sy + (ty - sy) * ph + Math.sin(ph * 9) * 5;
+          ctx.fillStyle = i % 2 ? '#f472b6' : kc;
+          ctx.beginPath();
+          ctx.arc(px, py, 2.5 + (1 - ph) * 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
+        ctx.fillStyle = '#fb7185';
+        ctx.shadowColor = '#fb7185';
+        ctx.shadowBlur = 12;
+        const hx = sx + f.facing * 26;
+        const hy = sy - 6;
+        ctx.beginPath();
+        ctx.arc(hx - 5, hy, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.arc(hx + 5, hy, 5, 0, Math.PI * 2);
+        ctx.fill();
+        ctx.beginPath();
+        ctx.moveTo(hx - 9, hy + 2);
+        ctx.lineTo(hx + 9, hy + 2);
+        ctx.lineTo(hx, hy + 14);
+        ctx.closePath();
+        ctx.fill();
+        ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
 
     // Legs
     ctx.fillStyle = '#1a1a3a';
@@ -1639,7 +1738,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M/,/.: Finishers | ;: Grab | P: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | N/M/,/.: Finishers | ;: Grab | E: Kiss (Rogue/Ivy) | P: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1665,7 +1764,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | S+O: Transform | N/M/,/.: Finishers | ;: Grab | P: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | N/M/,/.: Finishers | ;: Grab | E: Kiss (Rogue/Ivy) | P: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}

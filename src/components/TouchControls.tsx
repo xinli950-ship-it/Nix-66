@@ -71,6 +71,9 @@ export default function TouchControls({ keysRef }: TouchControlsProps) {
         <button {...bind('p')} className={`${btn} w-14 h-14 text-xs`}>
           BLOCK
         </button>
+        <button {...bind('e')} className={`${btn} w-14 h-14 text-xs`}>
+          💋 KISS
+        </button>
         <button {...bind('enter')} className={`${btn} w-14 h-14 text-xs`}>
           CHARGE
         </button>
