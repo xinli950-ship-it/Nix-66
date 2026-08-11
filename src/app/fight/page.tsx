@@ -1089,8 +1089,8 @@ export default function FightPage() {
     }
 
     // ── Draw fighters ──
-    drawFighter(ctx, p1, p1.color);
-    drawFighter(ctx, p2, p2.color);
+    drawFighter(ctx, p1, p1.color, p2);
+    drawFighter(ctx, p2, p2.color, p1);
 
     ctx.restore();
   }
@@ -1098,7 +1098,8 @@ export default function FightPage() {
   function drawFighter(
     ctx: CanvasRenderingContext2D,
     f: FighterState,
-    color: string
+    color: string,
+    opp: FighterState
   ) {
     ctx.save();
 
@@ -1396,10 +1397,9 @@ export default function FightPage() {
       }
       // Kiss: heart + power-drain stream
       if (f.attackType === 'kiss') {
-        const opp = f === p1 ? p2 : p1;
         const sx = cx + w / 2;
         const sy = cy + 30;
-        const tx = opp.x + opp.w / 2;
+        const tx = opp.x + opp.width / 2;
         const ty = opp.y + 30;
         const kc = f.finisherColor || '#f472b6';
         ctx.globalAlpha = 0.9;
