@@ -66,9 +66,9 @@ export default function TouchControls({ keysRef }: TouchControlsProps) {
           KICK
         </button>
         <button {...bind('l')} className={`${btn} w-14 h-14 text-xs`}>
-          SPECIAL
+          JUMP
         </button>
-        <button {...bind('s')} className={`${btn} w-14 h-14 text-xs`}>
+        <button {...bind('p')} className={`${btn} w-14 h-14 text-xs`}>
           BLOCK
         </button>
         <button {...bind('enter')} className={`${btn} w-14 h-14 text-xs`}>

@@ -305,7 +305,9 @@ export default function FightPage() {
           p1.facing = 1;
         }
         if (keys.has('w')) p1.vy = -4;
-        if (keys.has('s') && !keys.has('a') && !keys.has('d')) {
+        if (keys.has('s') && !keys.has('a') && !keys.has('d')) p1.vy = 4;
+        // P = Block
+        if (keys.has('p')) {
           p1.isBlocking = true;
         }
 
@@ -1405,7 +1407,7 @@ export default function FightPage() {
                 ⚔️ FIGHT! ⚔️
               </button>
               <p className="text-gray-500 text-xs mt-3">
-                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | S: Block | Enter: Charge
+                WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | P: Block | Enter: Charge
               </p>
               <button
                 onClick={() => setIsMuted(!isMuted)}
@@ -1431,7 +1433,7 @@ export default function FightPage() {
           className="w-full max-w-5xl rounded-xl"
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
-          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | S: Block | Enter: Charge</p>
+          <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | O: Transform | S+U/I/O: Finishers | P: Block | Enter: Charge</p>
           <button
             onClick={() => setIsMuted(!isMuted)}
             className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
