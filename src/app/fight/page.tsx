@@ -28,6 +28,8 @@ interface FighterState {
   isKissed: boolean;
   kissDrain: boolean;
   kissName: string;
+  kissPoison: boolean;
+  poisoned: number;
   combo: number;
   canAct: boolean;
   isBlocking: boolean;
@@ -84,6 +86,8 @@ function createFighter(
     isKissed: false,
     kissDrain: !!char.kissDrain,
     kissName: char.kissName || 'KISS',
+    kissPoison: !!char.kissPoison,
+    poisoned: 0,
     combo: 0,
     canAct: true,
     isBlocking: false,
@@ -558,7 +562,14 @@ export default function FightPage() {
                         p2.canAct = false;
                         p2.vx = 0;
                         p2.vy = 0;
-                        if (gameRef.current) {
+                        if (p1.kissPoison) {
+                          p2.poisoned = 150;
+                          if (gameRef.current) {
+                            gameRef.current.announcer = 'TOXIC KISS! POISONED!';
+                            gameRef.current.announcerTimer = 60;
+                          }
+                        }
+                        if (gameRef.current && !p1.kissPoison) {
                           gameRef.current.announcer = (p1.kissName || 'KISS').toUpperCase() + '!';
                           gameRef.current.announcerTimer = 50;
                         }
@@ -884,6 +895,27 @@ export default function FightPage() {
         } else {
           p2.isKissed = false;
           p2.canAct = true;
+        }
+      }
+
+      // Poison damage over time (Ivy's Toxic Kiss)
+      if (p2.poisoned > 0 && game.phase === 'fight') {
+        p2.poisoned--;
+        if (p2.poisoned % 15 === 0 && p2.poisoned > 0) {
+          p2.hp -= 2;
+          p2.hitTimer = 4;
+          if (p2.hp <= 0) {
+            game.phase = 'ko';
+            game.announcer = 'K.O.!';
+            game.announcerTimer = 120;
+            game.winner = 'p1';
+            game.screenShake = 25;
+            setTimeout(() => {
+              if (game) game.phase = 'result';
+              setGamePhase('result');
+              setResultText(`${player1?.name} Wins!`);
+            }, 2000);
+          }
         }
       }
 
@@ -1430,6 +1462,19 @@ export default function FightPage() {
         ctx.closePath();
         ctx.fill();
         ctx.shadowBlur = 0;
+        ctx.globalAlpha = 1;
+      }
+      // Poisoned: green bubbling aura
+      if (f.poisoned > 0) {
+        ctx.globalAlpha = 0.75;
+        for (let i = 0; i < 4; i++) {
+          const pa = (f.poisoned * 0.2 + i * 1.7) % (Math.PI * 2);
+          const pr = 20 + Math.sin(f.poisoned * 0.15 + i * 2) * 7;
+          ctx.fillStyle = i % 2 ? '#22c55e' : '#84cc16';
+          ctx.beginPath();
+          ctx.arc(cx + w / 2 + Math.cos(pa) * pr, cy + h * 0.5 + Math.sin(pa) * pr, 3.5, 0, Math.PI * 2);
+          ctx.fill();
+        }
         ctx.globalAlpha = 1;
       }
 
