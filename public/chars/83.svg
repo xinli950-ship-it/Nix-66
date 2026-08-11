@@ -1,0 +1,16 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="400" height="600" viewBox="0 0 400 600">
+  <defs>
+    <linearGradient id="g" x1="0" y1="0" x2="0" y2="1">
+      <stop offset="0%" stop-color="#f97316"/>
+      <stop offset="100%" stop-color="#dc2626"/>
+    </linearGradient>
+  </defs>
+  <rect width="400" height="600" fill="url(#g)"/>
+  <rect x="14" y="14" width="372" height="572" rx="14" fill="none" stroke="rgba(255,255,255,0.28)" stroke-width="2"/>
+  <circle cx="200" cy="200" r="88" fill="rgba(0,0,0,0.28)"/>
+  <text x="200" y="238" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="76" font-weight="900" fill="#ffffff">G</text>
+  <text x="200" y="380" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="36" font-weight="800" fill="#ffffff">Gaara</text>
+  <text x="200" y="420" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="22" fill="rgba(255,255,255,0.85)">Naruto</text>
+  <rect x="130" y="452" width="140" height="34" rx="17" fill="rgba(0,0,0,0.3)"/>
+  <text x="200" y="475" text-anchor="middle" font-family="Arial, Helvetica, sans-serif" font-size="16" font-weight="700" fill="#ffffff">Anime</text>
+</svg>

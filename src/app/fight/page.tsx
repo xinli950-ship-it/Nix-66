@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { characters, Character } from '@/data/characters';
+import TouchControls from '@/components/TouchControls';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 
@@ -110,6 +111,7 @@ export default function FightPage() {
   const [search, setSearch] = useState('');
   const [resultText, setResultText] = useState('');
   const [generatingReplay, setGeneratingReplay] = useState(false);
+  const autoStartRef = useRef(false);
   const [visibleCount, setVisibleCount] = useState(60);
 
   // Reset visible count when filters change
@@ -214,6 +216,30 @@ export default function FightPage() {
       }
     }, 2000);
   }, [player1, player2]);
+
+  // ─── URL deep link (?p1=&p2=) — auto-start a match ────────────
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const p1id = params.get('p1');
+    const p2id = params.get('p2');
+    if (p1id && p2id) {
+      const c1 = characters.find((c) => String(c.id) === p1id);
+      const c2 = characters.find((c) => String(c.id) === p2id);
+      if (c1 && c2) {
+        setPlayer1(c1);
+        setPlayer2(c2);
+        autoStartRef.current = true;
+      }
+    }
+  }, []);
+
+  useEffect(() => {
+    if (!autoStartRef.current || !player1 || !player2) return;
+    autoStartRef.current = false;
+    setGamePhase('vs');
+    const t = setTimeout(startGame, 100);
+    return () => clearTimeout(t);
+  }, [player1, player2, startGame]);
 
   // ─── Game Loop ────────────────────────────────────────────────
 
@@ -1163,6 +1189,7 @@ export default function FightPage() {
             height={500}
             className="w-full max-w-4xl rounded-xl"
           />
+          <TouchControls keysRef={keysRef} />
         </main>
       );
     }
@@ -1352,6 +1379,7 @@ export default function FightPage() {
             {isMuted ? '🔇 Muted' : '🔊 Sound'}
           </button>
         </div>
+        <TouchControls keysRef={keysRef} />
       </main>
     );
   }
