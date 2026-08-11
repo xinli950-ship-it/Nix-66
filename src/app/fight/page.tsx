@@ -140,14 +140,14 @@ export default function FightPage() {
       const sfx = new Audio();
       sfx.volume = 0.3;
       const sounds: Record<string, string> = {
-        punch: 'https://cdn.freesound.org/previews/277/277022_5259851-lq.mp3',
-        kick: 'https://cdn.freesound.org/previews/277/277024_5259851-lq.mp3',
-        special: 'https://cdn.freesound.org/previews/253/253172_4491572-lq.mp3',
-        blast: 'https://cdn.freesound.org/previews/352/352876_6348830-lq.mp3',
-        slam: 'https://cdn.freesound.org/previews/521/521974_10065341-lq.mp3',
-        ultimate: 'https://cdn.freesound.org/previews/415/415762_5121236-lq.mp3',
-        block: 'https://cdn.freesound.org/previews/277/277025_5259851-lq.mp3',
-        hit: 'https://cdn.freesound.org/previews/277/277023_5259851-lq.mp3',
+        punch: '/sfx/punch.wav',
+        kick: '/sfx/kick.wav',
+        special: '/sfx/special.wav',
+        blast: '/sfx/blast.wav',
+        slam: '/sfx/slam.wav',
+        ultimate: '/sfx/ultimate.wav',
+        block: '/sfx/block.wav',
+        hit: '/sfx/hit.wav',
       };
       sfx.src = sounds[type] || sounds.punch;
       sfx.play().catch(() => {});
@@ -162,21 +162,36 @@ export default function FightPage() {
     }
     if (!player1 && !player2) return;
     const cats = new Set([player1?.category, player2?.category].filter(Boolean));
-    let musicUrl = 'https://cdn.freesound.org/previews/465/465239_9213299-lq.mp3';
-    if (cats.has('Toku')) musicUrl = 'https://cdn.freesound.org/previews/550/550815_12530325-lq.mp3';
-    else if (cats.has('Anime')) musicUrl = 'https://cdn.freesound.org/previews/514/514762_345459-lq.mp3';
-    else if (cats.has('WWE') || cats.has('AEW')) musicUrl = 'https://cdn.freesound.org/previews/469/469263_9497060-lq.mp3';
-    else if (cats.has('Cartoon')) musicUrl = 'https://cdn.freesound.org/previews/459/459247_9055242-lq.mp3';
+    let musicUrl = '/music/default.wav';
+    if (cats.has('Toku')) musicUrl = '/music/toku.wav';
+    else if (cats.has('Anime')) musicUrl = '/music/anime.wav';
+    else if (cats.has('WWE') || cats.has('AEW')) musicUrl = '/music/wrestling.wav';
+    else if (cats.has('Cartoon')) musicUrl = '/music/cartoon.wav';
     if (bgmRef.current) bgmRef.current.pause();
     const bgm = new Audio(musicUrl);
     bgm.loop = true;
-    bgm.volume = 0.15;
+    bgm.volume = 0.18;
+    // Browsers block autoplay without a user gesture; start on first
+    // pointer/key input if the initial play() was rejected.
     bgm.play().catch(() => {});
     bgmRef.current = bgm;
     return () => {
       if (bgmRef.current) { bgmRef.current.pause(); bgmRef.current = null; }
     };
   }, [player1, player2, isMuted]);
+
+  // Resume BGM on the first user gesture (autoplay policy workaround)
+  useEffect(() => {
+    const resume = () => {
+      if (bgmRef.current && !isMuted) bgmRef.current.play().catch(() => {});
+    };
+    window.addEventListener('pointerdown', resume);
+    window.addEventListener('keydown', resume);
+    return () => {
+      window.removeEventListener('pointerdown', resume);
+      window.removeEventListener('keydown', resume);
+    };
+  }, [isMuted]);
 
   // ─── Initialize game ──────────────────────────────────────────
 
