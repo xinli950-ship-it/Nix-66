@@ -1,3 +1,4 @@
+// @ts-nocheck - standalone Bun runtime script, not part of the Next.js bundle
 // Bun reverse proxy: port 3000 (public) -> 3001 (Next.js)
 // Keeps the public surface on port 3000 while Next runs on 3001.
 const TARGET = 'http://127.0.0.1:3001';

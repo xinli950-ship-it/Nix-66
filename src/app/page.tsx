@@ -1,10 +1,10 @@
 'use client';
 
-import { useState, useMemo } from 'react';
+import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { characters, Character } from '@/data/characters';
 
-const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku'] as const;
+const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 
 export default function Home() {
   const [player1, setPlayer1] = useState<Character | null>(null);
@@ -13,7 +13,13 @@ export default function Home() {
   const [category, setCategory] = useState<string>('All');
   const [search, setSearch] = useState('');
   const [showSelect, setShowSelect] = useState(true);
+  const [visibleCount, setVisibleCount] = useState(60);
   const router = useRouter();
+
+  // Reset visible count when filters change
+  useEffect(() => {
+    setVisibleCount(60);
+  }, [category, search]);
 
   const filtered = useMemo(() => {
     let list = characters;
@@ -53,7 +59,7 @@ export default function Home() {
           <div className="flex items-center gap-8 md:gap-16 mb-12">
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
-                <img src={player1.imageUrl} alt={player1.name} className="w-full h-full object-cover" />
+                <img src={player1.imageUrl} alt={player1.name} className="w-full h-full object-cover" decoding="async" />
               </div>
               <h2 className="text-2xl font-black mt-4 text-red-400">{player1.name}</h2>
               <p className="text-gray-500 text-sm">{player1.universe}</p>
@@ -61,7 +67,7 @@ export default function Home() {
             <div className="text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">VS</div>
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <img src={player2.imageUrl} alt={player2.name} className="w-full h-full object-cover" />
+                <img src={player2.imageUrl} alt={player2.name} className="w-full h-full object-cover" decoding="async" />
               </div>
               <h2 className="text-2xl font-black mt-4 text-blue-400">{player2.name}</h2>
               <p className="text-gray-500 text-sm">{player2.universe}</p>
@@ -130,10 +136,12 @@ export default function Home() {
             <p className="text-sm text-gray-500 font-bold">
               {selectingFor === 'p1' ? '🎮 SELECT FIGHTER 1' : '🎮 SELECT FIGHTER 2'}
             </p>
-            <p className="text-xs text-gray-600">{filtered.length} fighters</p>
+            <p className="text-xs text-gray-600">
+              Showing {Math.min(visibleCount, filtered.length)} of {filtered.length} fighters
+            </p>
           </div>
           <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-2">
-            {filtered.map(char => {
+            {filtered.slice(0, visibleCount).map(char => {
               const isP1 = player1?.id === char.id;
               const isP2 = player2?.id === char.id;
               const isSelected = isP1 || isP2;
@@ -142,7 +150,7 @@ export default function Home() {
                   className={`group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
                     isSelected ? 'ring-2 ring-yellow-400 scale-105 z-10' : 'hover:ring-2 hover:ring-white/50 hover:scale-105'
                   } ${isP1 ? 'ring-red-500' : isP2 ? 'ring-blue-500' : ''}`}>
-                  <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" loading="lazy" />
+                  <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-1.5">
                     <p className="text-[10px] font-bold truncate leading-tight">{char.name}</p>
@@ -158,6 +166,16 @@ export default function Home() {
             <div className="text-center py-20 text-gray-500">
               <p className="text-2xl mb-2">🔍</p>
               <p>No fighters found matching "{search}"</p>
+            </div>
+          )}
+          {visibleCount < filtered.length && (
+            <div className="text-center mt-6 mb-8">
+              <button
+                onClick={() => setVisibleCount(prev => prev + 60)}
+                className="px-8 py-3 bg-yellow-500 hover:bg-yellow-400 text-black font-bold rounded-lg transition-all"
+              >
+                Load More ({filtered.length - visibleCount} remaining)
+              </button>
             </div>
           )}
         </div>
