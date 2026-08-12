@@ -165,7 +165,7 @@ export default function FightPage() {
 
   // ─── Audio System ─────────────────────────────────────────────
   const [isMuted, setIsMuted] = useState(false);
-  const [musicChoice, setMusicChoice] = useState<'auto' | 'kpop1' | 'kpop2' | 'ten' | 'toku' | 'anime' | 'wrestling' | 'cartoon'>('auto');
+  const [musicChoice, setMusicChoice] = useState<'auto' | 'kmix' | 'kpop1' | 'kpop2' | 'kpop3' | 'kpop4' | 'kpop5' | 'ten' | 'toku' | 'anime' | 'wrestling' | 'cartoon'>('auto');
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const sfxRef = useRef<HTMLAudioElement | null>(null);
 
@@ -199,6 +199,10 @@ export default function FightPage() {
     let musicUrl = '/music/default.wav';
     if (musicChoice === 'kpop1') musicUrl = '/music/kpop1.wav';
     else if (musicChoice === 'kpop2') musicUrl = '/music/kpop2.wav';
+    else if (musicChoice === 'kpop3') musicUrl = '/music/kpop3.wav';
+    else if (musicChoice === 'kpop4') musicUrl = '/music/kpop4.wav';
+    else if (musicChoice === 'kpop5') musicUrl = '/music/kpop5.wav';
+    else if (musicChoice === 'kmix') musicUrl = '/music/kpop' + (1 + Math.floor(Math.random() * 5)) + '.wav';
     else if (musicChoice === 'ten') musicUrl = '/music/dream10.wav';
     else if (musicChoice === 'toku') musicUrl = '/music/toku.wav';
     else if (musicChoice === 'anime') musicUrl = '/music/anime.wav';
@@ -1830,7 +1834,7 @@ export default function FightPage() {
             >
               {isMuted ? '🔇 Muted' : '🔊 Sound'}
             </button>
-            {([['auto', '🎵 Auto'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
+            {([['auto', '🎵 Auto'], ['kmix', '🎧 K-Pop Mix'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['kpop3', 'K-Pop 3'], ['kpop4', 'K-Pop 4'], ['kpop5', 'K-Pop 5'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
               <button
                 key={v}
                 onClick={() => setMusicChoice(v)}
