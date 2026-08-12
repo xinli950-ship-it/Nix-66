@@ -214,6 +214,12 @@ export default function FightPage() {
       else if (cats.has('Anime')) musicUrl = '/music/anime.wav';
       else if (cats.has('WWE') || cats.has('AEW')) musicUrl = '/music/wrestling.wav';
       else if (cats.has('Cartoon')) musicUrl = '/music/cartoon.wav';
+      else if (cats.has('K-Pop')) musicUrl = '/music/kpop' + (1 + Math.floor(Math.random() * 5)) + '.wav';
+      else {
+        // No category match: rotate K-pop into the automatic music
+        const pool = ['default', 'kpop1', 'kpop2', 'kpop3', 'kpop4', 'kpop5'];
+        musicUrl = '/music/' + pool[Math.floor(Math.random() * pool.length)] + '.wav';
+      }
     }
     if (bgmRef.current) bgmRef.current.pause();
     const bgm = new Audio(musicUrl);
@@ -1834,7 +1840,7 @@ export default function FightPage() {
             >
               {isMuted ? '🔇 Muted' : '🔊 Sound'}
             </button>
-            {([['auto', '🎵 Auto'], ['kmix', '🎧 K-Pop Mix'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['kpop3', 'K-Pop 3'], ['kpop4', 'K-Pop 4'], ['kpop5', 'K-Pop 5'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
+            {([['auto', '🎵 Auto'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
               <button
                 key={v}
                 onClick={() => setMusicChoice(v)}
