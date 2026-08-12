@@ -165,7 +165,7 @@ export default function FightPage() {
 
   // ─── Audio System ─────────────────────────────────────────────
   const [isMuted, setIsMuted] = useState(false);
-  const [musicChoice, setMusicChoice] = useState<'auto' | 'kpop1' | 'kpop2' | 'ten'>('auto');
+  const [musicChoice, setMusicChoice] = useState<'auto' | 'kpop1' | 'kpop2' | 'ten' | 'toku' | 'anime' | 'wrestling' | 'cartoon'>('auto');
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const sfxRef = useRef<HTMLAudioElement | null>(null);
 
@@ -200,6 +200,10 @@ export default function FightPage() {
     if (musicChoice === 'kpop1') musicUrl = '/music/kpop1.wav';
     else if (musicChoice === 'kpop2') musicUrl = '/music/kpop2.wav';
     else if (musicChoice === 'ten') musicUrl = '/music/dream10.wav';
+    else if (musicChoice === 'toku') musicUrl = '/music/toku.wav';
+    else if (musicChoice === 'anime') musicUrl = '/music/anime.wav';
+    else if (musicChoice === 'wrestling') musicUrl = '/music/wrestling.wav';
+    else if (musicChoice === 'cartoon') musicUrl = '/music/cartoon.wav';
     else {
       const cats = new Set([player1?.category, player2?.category].filter(Boolean));
       if (cats.has('Toku')) musicUrl = '/music/toku.wav';
@@ -1826,7 +1830,7 @@ export default function FightPage() {
             >
               {isMuted ? '🔇 Muted' : '🔊 Sound'}
             </button>
-            {([['auto', '🎵 Auto'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['ten', '10-Min']] as const).map(([v, label]) => (
+            {([['auto', '🎵 Auto'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
               <button
                 key={v}
                 onClick={() => setMusicChoice(v)}
