@@ -165,6 +165,7 @@ export default function FightPage() {
 
   // ─── Audio System ─────────────────────────────────────────────
   const [isMuted, setIsMuted] = useState(false);
+  const [musicChoice, setMusicChoice] = useState<'auto' | 'kpop1' | 'kpop2' | 'ten'>('auto');
   const bgmRef = useRef<HTMLAudioElement | null>(null);
   const sfxRef = useRef<HTMLAudioElement | null>(null);
 
@@ -195,12 +196,17 @@ export default function FightPage() {
       return;
     }
     if (!player1 && !player2) return;
-    const cats = new Set([player1?.category, player2?.category].filter(Boolean));
     let musicUrl = '/music/default.wav';
-    if (cats.has('Toku')) musicUrl = '/music/toku.wav';
-    else if (cats.has('Anime')) musicUrl = '/music/anime.wav';
-    else if (cats.has('WWE') || cats.has('AEW')) musicUrl = '/music/wrestling.wav';
-    else if (cats.has('Cartoon')) musicUrl = '/music/cartoon.wav';
+    if (musicChoice === 'kpop1') musicUrl = '/music/kpop1.wav';
+    else if (musicChoice === 'kpop2') musicUrl = '/music/kpop2.wav';
+    else if (musicChoice === 'ten') musicUrl = '/music/dream10.wav';
+    else {
+      const cats = new Set([player1?.category, player2?.category].filter(Boolean));
+      if (cats.has('Toku')) musicUrl = '/music/toku.wav';
+      else if (cats.has('Anime')) musicUrl = '/music/anime.wav';
+      else if (cats.has('WWE') || cats.has('AEW')) musicUrl = '/music/wrestling.wav';
+      else if (cats.has('Cartoon')) musicUrl = '/music/cartoon.wav';
+    }
     if (bgmRef.current) bgmRef.current.pause();
     const bgm = new Audio(musicUrl);
     bgm.loop = true;
@@ -212,7 +218,7 @@ export default function FightPage() {
     return () => {
       if (bgmRef.current) { bgmRef.current.pause(); bgmRef.current = null; }
     };
-  }, [player1, player2, isMuted]);
+  }, [player1, player2, isMuted, musicChoice]);
 
   // Resume BGM on the first user gesture (autoplay policy workaround)
   useEffect(() => {
@@ -1813,12 +1819,25 @@ export default function FightPage() {
         />
         <div className="mt-4 text-gray-500 text-sm text-center">
           <p>WASD: Move | J: Punch | K: Kick | L: Jump | U: Super | I: Ultra | S+O: Transform | O/S+U/S+I: Super | N/M/,/.: Finishers | ;: Grab | E: Kiss (drain) | P: Block | Enter: Charge</p>
-          <button
-            onClick={() => setIsMuted(!isMuted)}
-            className={`mt-2 px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
-          >
-            {isMuted ? '🔇 Muted' : '🔊 Sound'}
-          </button>
+          <div className="mt-2 flex gap-2 justify-center flex-wrap items-center">
+            <button
+              onClick={() => setIsMuted(!isMuted)}
+              className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${isMuted ? 'bg-red-600 text-white' : 'bg-green-600 text-white'}`}
+            >
+              {isMuted ? '🔇 Muted' : '🔊 Sound'}
+            </button>
+            {([['auto', '🎵 Auto'], ['kpop1', 'K-Pop 1'], ['kpop2', 'K-Pop 2'], ['ten', '10-Min']] as const).map(([v, label]) => (
+              <button
+                key={v}
+                onClick={() => setMusicChoice(v)}
+                className={`px-3 py-1 rounded-full text-xs font-bold transition-all ${
+                  musicChoice === v ? 'bg-yellow-500 text-black' : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+                }`}
+              >
+                {label}
+              </button>
+            ))}
+          </div>
         </div>
         <TouchControls keysRef={keysRef} />
       </main>
