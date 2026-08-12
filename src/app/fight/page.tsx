@@ -1600,7 +1600,10 @@ export default function FightPage() {
 
   const handleRematch = () => {
     if (!player1 || !player2) return;
-    startGame();
+    // Mount the canvas first (the result screen has none), then start —
+    // startGame needs canvasRef.current for the arena dimensions.
+    setGamePhase('vs');
+    setTimeout(startGame, 100);
   };
 
   const resetSelection = () => {
