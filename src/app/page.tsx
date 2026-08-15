@@ -2,7 +2,7 @@
 
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
-import { characters, Character } from '@/data/characters';
+import { characters, Character, getPortraitUrl } from '@/data/characters';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 
@@ -73,7 +73,7 @@ export default function Home() {
           <div className="flex items-center gap-8 md:gap-16 mb-12">
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
-                <img src={player1.imageUrl} alt={player1.name} className="w-full h-full object-cover" decoding="async" />
+                <img src={getPortraitUrl(player1)} alt={player1.name} className="w-full h-full object-cover" decoding="async" />
               </div>
               <h2 className="text-2xl font-black mt-4 text-red-400">{player1.name}</h2>
               <p className="text-gray-500 text-sm">{player1.universe}</p>
@@ -81,7 +81,7 @@ export default function Home() {
             <div className="text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">VS</div>
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <img src={player2.imageUrl} alt={player2.name} className="w-full h-full object-cover" decoding="async" />
+                <img src={getPortraitUrl(player2)} alt={player2.name} className="w-full h-full object-cover" decoding="async" />
               </div>
               <h2 className="text-2xl font-black mt-4 text-blue-400">{player2.name}</h2>
               <p className="text-gray-500 text-sm">{player2.universe}</p>
@@ -134,13 +134,13 @@ export default function Home() {
           <h2 className="text-3xl md:text-5xl font-black italic text-white mb-6">WATCH LEGENDS CLASH — INSTANTLY</h2>
           <div className="flex items-center justify-center gap-4 md:gap-10 mb-8">
             <div className="text-center">
-              <img src={featuredA.imageUrl} alt={featuredA.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-red-600 shadow-[0_0_25px_rgba(220,38,38,0.5)] object-cover" />
+              <img src={getPortraitUrl(featuredA)} alt={featuredA.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-red-600 shadow-[0_0_25px_rgba(220,38,38,0.5)] object-cover" />
               <p className="mt-2 text-red-400 font-bold text-sm">{featuredA.name}</p>
               <p className="text-[10px] text-gray-500">{featuredA.universe}</p>
             </div>
             <div className="text-5xl md:text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_12px_rgba(234,179,8,0.5)]">VS</div>
             <div className="text-center">
-              <img src={featuredB.imageUrl} alt={featuredB.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-blue-600 shadow-[0_0_25px_rgba(59,130,246,0.5)] object-cover" />
+              <img src={getPortraitUrl(featuredB)} alt={featuredB.name} className="w-24 h-36 md:w-32 md:h-48 rounded-xl border-4 border-blue-600 shadow-[0_0_25px_rgba(59,130,246,0.5)] object-cover" />
               <p className="mt-2 text-blue-400 font-bold text-sm">{featuredB.name}</p>
               <p className="text-[10px] text-gray-500">{featuredB.universe}</p>
             </div>
@@ -215,7 +215,7 @@ export default function Home() {
                   className={`group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
                     isSelected ? 'ring-2 ring-yellow-400 scale-105 z-10' : 'hover:ring-2 hover:ring-white/50 hover:scale-105'
                   } ${isP1 ? 'ring-red-500' : isP2 ? 'ring-blue-500' : ''}`}>
-                  <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <img src={getPortraitUrl(char)} alt={char.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-1.5">
                     <p className="text-[10px] font-bold truncate leading-tight">{char.name}</p>

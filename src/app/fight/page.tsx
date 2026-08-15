@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { characters, Character } from '@/data/characters';
+import { characters, Character, getPortraitUrl } from '@/data/characters';
 import TouchControls from '@/components/TouchControls';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
@@ -54,10 +54,36 @@ interface FighterState {
   finisher3: string;
   finisher4: string;
   imageUrl: string;
+  portraitUrl: string | null;
   scale: number;
 }
 
 type GamePhase = 'select' | 'vs' | 'fight' | 'ko' | 'result';
+
+// ─── Portrait helpers ──────────────────────────────────────────
+
+// Cache of loaded portrait images keyed by URL (module-level so it persists
+// across fights without re-fetching).
+const portraitCache = new Map<string, HTMLImageElement>();
+
+function loadPortrait(url: string): HTMLImageElement | null {
+  if (portraitCache.has(url)) return portraitCache.get(url) || null;
+  const img = new Image();
+  img.decoding = 'async';
+  img.onload = () => portraitCache.set(url, img);
+  img.onerror = () => portraitCache.set(url, img); // cache the failed img; drawFighter falls back
+  img.src = url;
+  portraitCache.set(url, img);
+  return img;
+}
+
+/** Returns the portrait image only once it is fully loaded (else null → fallback rendering). */
+function getLoadedPortrait(f: { portraitUrl: string | null }): HTMLImageElement | null {
+  if (!f.portraitUrl) return null;
+  const img = loadPortrait(f.portraitUrl);
+  if (img && img.complete && img.naturalWidth > 0) return img;
+  return null;
+}
 
 // ─── Fighter configs ───────────────────────────────────────────
 
@@ -112,6 +138,7 @@ function createFighter(
     finisher3: char.finisher3,
     finisher4: char.finisher4,
     imageUrl: char.imageUrl,
+    portraitUrl: getPortraitUrl(char),
     scale: 1,
   };
 }
@@ -209,7 +236,7 @@ export default function FightPage() {
     else if (musicChoice === 'wrestling') musicUrl = '/music/wrestling.wav';
     else if (musicChoice === 'cartoon') musicUrl = '/music/cartoon.wav';
     else {
-      const cats = new Set([player1?.category, player2?.category].filter(Boolean));
+      const cats = new Set<string>([player1?.category, player2?.category].filter(Boolean) as string[]);
       if (cats.has('Toku')) musicUrl = '/music/toku.wav';
       else if (cats.has('Anime')) musicUrl = '/music/anime.wav';
       else if (cats.has('WWE') || cats.has('AEW')) musicUrl = '/music/wrestling.wav';
@@ -255,6 +282,10 @@ export default function FightPage() {
     const canvas = canvasRef.current;
     const p1 = createFighter(player1, 150, 1, '#ef4444');
     const p2 = createFighter(player2, canvas.width - 150, -1, '#3b82f6');
+
+    // Preload portraits so the canvas renders real art the moment the fight starts
+    if (p1.portraitUrl) loadPortrait(p1.portraitUrl);
+    if (p2.portraitUrl) loadPortrait(p2.portraitUrl);
 
     p1.y = canvas.height - p1.height - 40;
     p2.y = canvas.height - p2.height - 40;
@@ -1178,39 +1209,63 @@ export default function FightPage() {
     ctx.shadowColor = color;
     ctx.shadowBlur = f.hitTimer > 0 ? 15 : 5;
 
-    // Body (rounded rect)
-    const bx = cx + 10;
-    const by = cy + 30;
-    const bw = w - 20;
-    const bh = h - 40;
-    roundRect(ctx, bx, by, bw, bh, 8);
-    ctx.fill();
+    const portraitImg = getLoadedPortrait(f);
+    if (portraitImg) {
+      // ── Portrait rendering: real character art as the fighter body ──
+      ctx.save();
+      if (f.facing === -1) {
+        ctx.translate(cx + w, cy);
+        ctx.scale(-1, 1);
+      }
+      ctx.drawImage(portraitImg, f.facing === -1 ? 0 : cx, f.facing === -1 ? 0 : cy, w, h);
+      ctx.restore();
+      ctx.shadowBlur = 0;
+      // Hit flash overlay (keeps damage feedback readable over the art)
+      if (f.hitTimer > 0 && f.hitTimer % 4 < 2) {
+        ctx.fillStyle = 'rgba(255,255,255,0.3)';
+        ctx.fillRect(cx, cy, w, h);
+      }
+      // Blocking tint
+      if (f.isBlocking) {
+        ctx.fillStyle = 'rgba(59,130,246,0.25)';
+        ctx.fillRect(cx, cy, w, h);
+      }
+    } else {
+      // ── Fallback: rectangle fighter (no portrait loaded) ──
+      // Body (rounded rect)
+      const bx = cx + 10;
+      const by = cy + 30;
+      const bw = w - 20;
+      const bh = h - 40;
+      roundRect(ctx, bx, by, bw, bh, 8);
+      ctx.fill();
 
-    // Head
-    ctx.fillStyle = '#ffccaa';
-    ctx.shadowBlur = 0;
-    ctx.beginPath();
-    ctx.arc(cx + w / 2, cy + 18, 16, 0, Math.PI * 2);
-    ctx.fill();
+      // Head
+      ctx.fillStyle = '#ffccaa';
+      ctx.shadowBlur = 0;
+      ctx.beginPath();
+      ctx.arc(cx + w / 2, cy + 18, 16, 0, Math.PI * 2);
+      ctx.fill();
 
-    // Hair/headband
-    ctx.fillStyle = f.hitTimer > 0 ? '#fff' : color;
-    ctx.fillRect(cx + w / 2 - 14, cy + 2, 28, 8);
+      // Hair/headband
+      ctx.fillStyle = f.hitTimer > 0 ? '#fff' : color;
+      ctx.fillRect(cx + w / 2 - 14, cy + 2, 28, 8);
 
-    // Eyes
-    ctx.fillStyle = '#333';
-    const eyeDir = f.facing === 1 ? 3 : -3;
-    ctx.fillRect(cx + w / 2 - 6 + eyeDir, cy + 14, 4, 4);
-    ctx.fillRect(cx + w / 2 + 2 + eyeDir, cy + 14, 4, 4);
+      // Eyes
+      ctx.fillStyle = '#333';
+      const eyeDir = f.facing === 1 ? 3 : -3;
+      ctx.fillRect(cx + w / 2 - 6 + eyeDir, cy + 14, 4, 4);
+      ctx.fillRect(cx + w / 2 + 2 + eyeDir, cy + 14, 4, 4);
+    }
 
-    // Arms
+    // Arms (rectangle arms only in fallback mode — portraits are the full body)
     const armSwing = f.isAttacking
       ? Math.sin(f.attackTimer * 0.8) * 20
       : 0;
     ctx.fillStyle = '#ffccaa';
     ctx.shadowBlur = 0;
 
-    if (f.isAttacking) {
+    if (f.isAttacking && !portraitImg) {
       // Attack arm extended
       const armDir = f.facing;
       ctx.fillRect(
@@ -1676,7 +1731,7 @@ export default function FightPage() {
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-red-600">
                 {player1 ? (
                   <img
-                    src={player1.imageUrl}
+                    src={getPortraitUrl(player1)}
                     alt={player1.name}
                     decoding="async"
                     className="w-full h-full object-cover"
@@ -1696,7 +1751,7 @@ export default function FightPage() {
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-blue-600">
                 {player2 ? (
                   <img
-                    src={player2.imageUrl}
+                    src={getPortraitUrl(player2)}
                     alt={player2.name}
                     decoding="async"
                     className="w-full h-full object-cover"
@@ -1762,7 +1817,7 @@ export default function FightPage() {
               >
                 <div className="aspect-[3/4] bg-gray-800">
                   <img
-                    src={char.imageUrl}
+                    src={getPortraitUrl(char)}
                     alt={char.name}
                     loading="lazy"
                     decoding="async"
@@ -1871,7 +1926,7 @@ export default function FightPage() {
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]">
                   <img
-                    src={player1.imageUrl}
+                    src={getPortraitUrl(player1)}
                     alt={player1.name}
                     decoding="async"
                     className="w-full h-full object-cover"
@@ -1885,7 +1940,7 @@ export default function FightPage() {
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                   <img
-                    src={player2.imageUrl}
+                    src={getPortraitUrl(player2)}
                     alt={player2.name}
                     decoding="async"
                     className="w-full h-full object-cover"
