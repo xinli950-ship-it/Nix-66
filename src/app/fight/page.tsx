@@ -324,12 +324,14 @@ export default function FightPage() {
     const params = new URLSearchParams(window.location.search);
     const p1id = params.get('p1');
     const p2id = params.get('p2');
+    const hasDeepLink = !!(p1id && p2id);
     let c1: Character | undefined;
     let c2: Character | undefined;
-    if (p1id && p2id) {
+    if (hasDeepLink) {
       c1 = characters.find((c) => String(c.id) === p1id);
       c2 = characters.find((c) => String(c.id) === p2id);
     }
+    if (!hasDeepLink) return; // plain /fight → show the character select grid
     if (!c1 || !c2) {
       const cats = ['Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'];
       const cat1 = cats[Math.floor(Math.random() * cats.length)];
