@@ -6,6 +6,8 @@ import { characters, Character, getPortraitUrl } from '@/data/characters';
 import TouchControls from '@/components/TouchControls';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
+// A character counts as "female" for the roster filter if it has the kiss-drain flag
+const charKissFlag = (c: Character): boolean => !!c.kissDrain;
 
 // ─── Game Types ────────────────────────────────────────────────
 
@@ -169,6 +171,7 @@ export default function FightPage() {
   const [player2, setPlayer2] = useState<Character | null>(null);
   const [selectingFor, setSelectingFor] = useState<'p1' | 'p2'>('p1');
   const [category, setCategory] = useState<string>('All');
+  const [femaleOnly, setFemaleOnly] = useState(false);
   const [search, setSearch] = useState('');
   const [resultText, setResultText] = useState('');
   const [generatingReplay, setGeneratingReplay] = useState(false);
@@ -183,12 +186,13 @@ export default function FightPage() {
   const filtered = useMemo(() => {
     let list = characters;
     if (category !== 'All') list = list.filter((c) => c.category === category);
+    if (femaleOnly) list = list.filter((c) => !!charKissFlag(c));
     if (search)
       list = list.filter((c) =>
         c.name.toLowerCase().includes(search.toLowerCase())
       );
     return list;
-  }, [category, search]);
+  }, [category, femaleOnly, search]);
 
   // ─── Audio System ─────────────────────────────────────────────
   const [isMuted, setIsMuted] = useState(false);
@@ -1785,6 +1789,16 @@ export default function FightPage() {
                 {cat}
               </button>
             ))}
+            <button
+              onClick={() => setFemaleOnly((v) => !v)}
+              className={`px-4 py-1.5 rounded-full text-sm font-bold transition-all ${
+                femaleOnly
+                  ? 'bg-pink-500 text-black'
+                  : 'bg-gray-800 text-gray-300 hover:bg-gray-700'
+              }`}
+            >
+              ♀ Female
+            </button>
           </div>
 
           {/* Search */}
