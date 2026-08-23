@@ -1895,7 +1895,7 @@ export default function FightPage() {
             >
               {isMuted ? '🔇 Muted' : '🔊 Sound'}
             </button>
-            {([['auto', '🎵 Auto'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
+            {([['auto', '🎵 Auto'], ['kmix', '🎧 K-Pop'], ['ten', '10-Min'], ['toku', 'Toku'], ['anime', 'Anime'], ['wrestling', 'WWE/AEW'], ['cartoon', 'Cartoon']] as const).map(([v, label]) => (
               <button
                 key={v}
                 onClick={() => setMusicChoice(v)}
