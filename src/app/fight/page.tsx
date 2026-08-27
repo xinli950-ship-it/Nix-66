@@ -4,6 +4,7 @@ import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
 import { characters, Character, getPortraitUrl } from '@/data/characters';
 import TouchControls from '@/components/TouchControls';
+import CharacterFig from '@/components/CharacterFig';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 // A character counts as "female" for the roster filter if it has the kiss-drain flag
@@ -1748,10 +1749,8 @@ export default function FightPage() {
             <div className="text-center">
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-red-600">
                 {player1 ? (
-                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player1.category)}`}>
-                    <span className="text-3xl font-black text-white/90 select-none">
-                      {(player1.name.charAt(0) || '?').toUpperCase()}
-                    </span>
+                  <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <CharacterFig cat={player1.category} size={104} />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
@@ -1767,10 +1766,8 @@ export default function FightPage() {
             <div className="text-center">
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-blue-600">
                 {player2 ? (
-                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player2.category)}`}>
-                    <span className="text-3xl font-black text-white/90 select-none">
-                      {(player2.name.charAt(0) || '?').toUpperCase()}
-                    </span>
+                  <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <CharacterFig cat={player2.category} size={104} />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
@@ -1841,10 +1838,8 @@ export default function FightPage() {
                     : 'border-blue-800 hover:border-blue-500'
                 }`}
               >
-                <div className={`aspect-[3/4] w-full flex items-center justify-center overflow-hidden ${catColorClass(char.category)}`}>
-                  <span className="text-5xl font-black text-white/90 drop-shadow-lg select-none" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
-                    {(char.name.charAt(0) || '?').toUpperCase()}
-                  </span>
+                <div className="aspect-[3/4] w-full flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-900 to-black">
+                  <CharacterFig cat={char.category} size={112} />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
                   <p className="text-[10px] font-bold text-white truncate">
@@ -1947,10 +1942,8 @@ export default function FightPage() {
             <div className="flex items-center gap-8 justify-center mt-8 mb-12">
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]">
-                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player1.category)}`}>
-                    <span className="text-6xl font-black text-white/90 select-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
-                      {(player1.name.charAt(0) || '?').toUpperCase()}
-                    </span>
+                  <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <CharacterFig cat={player1.category} size={150} />
                   </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-red-400">
@@ -1960,10 +1953,8 @@ export default function FightPage() {
               <div className="text-4xl font-black text-gray-600">VS</div>
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player2.category)}`}>
-                    <span className="text-6xl font-black text-white/90 select-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
-                      {(player2.name.charAt(0) || '?').toUpperCase()}
-                    </span>
+                  <div className="w-full h-full bg-gray-900 flex items-center justify-center">
+                    <CharacterFig cat={player2.category} size={150} />
                   </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-blue-400">
