@@ -8,6 +8,18 @@ import TouchControls from '@/components/TouchControls';
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 // A character counts as "female" for the roster filter if it has the kiss-drain flag
 const charKissFlag = (c: Character): boolean => !!c.kissDrain;
+// Distinct solid background color per category (no images — clean colored badges)
+function catColorClass(cat?: string): string {
+  switch ((cat || '').toLowerCase()) {
+    case 'anime': return 'bg-gradient-to-br from-orange-500 to-red-600';
+    case 'cartoon': return 'bg-gradient-to-br from-pink-500 to-purple-600';
+    case 'wwe': return 'bg-gradient-to-br from-red-600 to-rose-700';
+    case 'aew': return 'bg-gradient-to-br from-green-600 to-emerald-700';
+    case 'toku': return 'bg-gradient-to-br from-sky-500 to-blue-700';
+    case 'video games': return 'bg-gradient-to-br from-amber-500 to-orange-600';
+    default: return 'bg-gradient-to-br from-gray-600 to-gray-800';
+  }
+}
 
 // ─── Game Types ────────────────────────────────────────────────
 
@@ -1736,12 +1748,11 @@ export default function FightPage() {
             <div className="text-center">
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-red-600">
                 {player1 ? (
-                  <img
-                    src={getPortraitUrl(player1)}
-                    alt={player1.name}
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player1.category)}`}>
+                    <span className="text-3xl font-black text-white/90 select-none">
+                      {(player1.name.charAt(0) || '?').toUpperCase()}
+                    </span>
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
                     ?
@@ -1756,12 +1767,11 @@ export default function FightPage() {
             <div className="text-center">
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-blue-600">
                 {player2 ? (
-                  <img
-                    src={getPortraitUrl(player2)}
-                    alt={player2.name}
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player2.category)}`}>
+                    <span className="text-3xl font-black text-white/90 select-none">
+                      {(player2.name.charAt(0) || '?').toUpperCase()}
+                    </span>
+                  </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
                     ?
@@ -1831,14 +1841,10 @@ export default function FightPage() {
                     : 'border-blue-800 hover:border-blue-500'
                 }`}
               >
-                <div className="aspect-[3/4] bg-gray-800">
-                  <img
-                    src={getPortraitUrl(char)}
-                    alt={char.name}
-                    loading="lazy"
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
+                <div className={`aspect-[3/4] w-full flex items-center justify-center overflow-hidden ${catColorClass(char.category)}`}>
+                  <span className="text-5xl font-black text-white/90 drop-shadow-lg select-none" style={{ textShadow: '0 2px 6px rgba(0,0,0,0.5)' }}>
+                    {(char.name.charAt(0) || '?').toUpperCase()}
+                  </span>
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
                   <p className="text-[10px] font-bold text-white truncate">
@@ -1941,12 +1947,11 @@ export default function FightPage() {
             <div className="flex items-center gap-8 justify-center mt-8 mb-12">
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]">
-                  <img
-                    src={getPortraitUrl(player1)}
-                    alt={player1.name}
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player1.category)}`}>
+                    <span className="text-6xl font-black text-white/90 select-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                      {(player1.name.charAt(0) || '?').toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-red-400">
                   {player1.name}
@@ -1955,12 +1960,11 @@ export default function FightPage() {
               <div className="text-4xl font-black text-gray-600">VS</div>
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
-                  <img
-                    src={getPortraitUrl(player2)}
-                    alt={player2.name}
-                    decoding="async"
-                    className="w-full h-full object-cover"
-                  />
+                  <div className={`w-full h-full flex items-center justify-center ${catColorClass(player2.category)}`}>
+                    <span className="text-6xl font-black text-white/90 select-none" style={{ textShadow: '0 2px 8px rgba(0,0,0,0.5)' }}>
+                      {(player2.name.charAt(0) || '?').toUpperCase()}
+                    </span>
+                  </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-blue-400">
                   {player2.name}

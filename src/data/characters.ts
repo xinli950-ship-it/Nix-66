@@ -21,9 +21,9 @@ export interface Character {
   finisher4: string;
 }
 
-/** Resolve the best image for a character: portraitUrl when set, else imageUrl. */
+/** No image portraits — fighters render as clean colored fighters (owner: "no images"). Always empty. */
 export function getPortraitUrl(char: { portraitUrl?: string; imageUrl: string }): string {
-  return char.portraitUrl || char.imageUrl;
+  return '';
 }
 
 export const characters: Character[] = [
