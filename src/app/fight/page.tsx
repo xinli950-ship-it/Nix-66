@@ -2,7 +2,7 @@
 
 import { useState, useEffect, useRef, useCallback, useMemo } from 'react';
 import { useRouter } from 'next/navigation';
-import { characters, Character, getPortraitUrl } from '@/data/characters';
+import { characters, Character, getSpriteUrl } from '@/data/characters';
 import TouchControls from '@/components/TouchControls';
 import CharacterFig from '@/components/CharacterFig';
 
@@ -153,7 +153,7 @@ function createFighter(
     finisher3: char.finisher3,
     finisher4: char.finisher4,
     imageUrl: char.imageUrl,
-    portraitUrl: getPortraitUrl(char),
+    portraitUrl: getSpriteUrl(char),
     scale: 1,
   };
 }
@@ -1750,7 +1750,7 @@ export default function FightPage() {
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-red-600">
                 {player1 ? (
                   <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                    <CharacterFig cat={player1.category} size={104} />
+                    <CharacterFig cat={player1.category} size={104} name={player1.name} />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
@@ -1767,7 +1767,7 @@ export default function FightPage() {
               <div className="w-24 h-32 rounded-lg overflow-hidden border-2 border-blue-600">
                 {player2 ? (
                   <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                    <CharacterFig cat={player2.category} size={104} />
+                    <CharacterFig cat={player2.category} size={104} name={player2.name} />
                   </div>
                 ) : (
                   <div className="w-full h-full bg-gray-800 flex items-center justify-center text-3xl">
@@ -1839,7 +1839,7 @@ export default function FightPage() {
                 }`}
               >
                 <div className="aspect-[3/4] w-full flex items-center justify-center overflow-hidden bg-gradient-to-b from-gray-900 to-black">
-                  <CharacterFig cat={char.category} size={112} />
+                  <CharacterFig cat={char.category} size={112} name={char.name} />
                 </div>
                 <div className="absolute bottom-0 left-0 right-0 bg-gradient-to-t from-black/90 to-transparent p-1.5">
                   <p className="text-[10px] font-bold text-white truncate">
@@ -1943,7 +1943,7 @@ export default function FightPage() {
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-red-600 shadow-[0_0_20px_rgba(220,38,38,0.5)]">
                   <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                    <CharacterFig cat={player1.category} size={150} />
+                    <CharacterFig cat={player1.category} size={150} name={player1.name} />
                   </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-red-400">
@@ -1954,7 +1954,7 @@ export default function FightPage() {
               <div className="text-center">
                 <div className="w-32 h-44 rounded-xl overflow-hidden border-4 border-blue-600 shadow-[0_0_20px_rgba(59,130,246,0.5)]">
                   <div className="w-full h-full bg-gray-900 flex items-center justify-center">
-                    <CharacterFig cat={player2.category} size={150} />
+                    <CharacterFig cat={player2.category} size={150} name={player2.name} />
                   </div>
                 </div>
                 <p className="text-lg font-bold mt-2 text-blue-400">

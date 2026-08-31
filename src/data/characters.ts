@@ -21,9 +21,13 @@ export interface Character {
   finisher4: string;
 }
 
-/** No image portraits — fighters render as clean colored fighters (owner: "no images"). Always empty. */
-export function getPortraitUrl(char: { portraitUrl?: string; imageUrl: string }): string {
-  return '';
+/**
+ * Resolve a real sprite for a fighter: public/sprites/{id}.png takes priority,
+ * else the reference image, else null (→ character-accurate drawn figure).
+ * This is the MUGEN-style sprite pipeline — drop a sprite PNG at that path and it just works.
+ */
+export function getSpriteUrl(char: { id: string; portraitUrl?: string }): string {
+  return '/sprites/' + char.id + '.png';
 }
 
 export const characters: Character[] = [
