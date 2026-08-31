@@ -3,6 +3,7 @@
 import { useState, useMemo, useEffect } from 'react';
 import { useRouter } from 'next/navigation';
 import { characters, Character } from '@/data/characters';
+import CharacterFig from '@/components/CharacterFig';
 
 const CATEGORIES = ['All', 'Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'] as const;
 
@@ -50,6 +51,20 @@ export default function Home() {
     setSelectingFor('p1');
     setShowSelect(true);
   };
+  const goFight = (a: Character, b: Character) => {
+    router.push(`/fight?p1=${a.id}&p2=${b.id}`);
+  };
+  const surpriseMatch = () => {
+    const cats = ['Anime', 'Cartoon', 'WWE', 'AEW', 'Toku', 'Video Games'];
+    const c1 = cats[Math.floor(Math.random() * cats.length)];
+    let c2 = cats[Math.floor(Math.random() * cats.length)];
+    if (c2 === c1) c2 = cats[(cats.indexOf(c1) + 1 + Math.floor(Math.random() * (cats.length - 1))) % cats.length];
+    const a = characters.filter(c => c.category === c1);
+    const b = characters.filter(c => c.category === c2);
+    if (a.length && b.length) goFight(a[Math.floor(Math.random() * a.length)], b[Math.floor(Math.random() * b.length)]);
+  };
+  const featuredA = characters.find(c => c.name === 'Goku') || characters[0];
+  const featuredB = characters.find(c => c.name.toLowerCase().includes('undertaker')) || characters.find(c => c.category === 'WWE') || characters[1];
 
   // VS Screen
   if (!showSelect && player1 && player2) {
@@ -59,7 +74,7 @@ export default function Home() {
           <div className="flex items-center gap-8 md:gap-16 mb-12">
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-red-600 shadow-[0_0_30px_rgba(220,38,38,0.5)]">
-                <img src={player1.imageUrl} alt={player1.name} className="w-full h-full object-cover" decoding="async" />
+                <div className="w-full h-full bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center"><CharacterFig cat={player1.category} size={170} name={player1.name} /></div>
               </div>
               <h2 className="text-2xl font-black mt-4 text-red-400">{player1.name}</h2>
               <p className="text-gray-500 text-sm">{player1.universe}</p>
@@ -67,7 +82,7 @@ export default function Home() {
             <div className="text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_10px_rgba(234,179,8,0.5)]">VS</div>
             <div className="text-center">
               <div className="w-48 h-64 md:w-64 md:h-80 rounded-2xl overflow-hidden border-4 border-blue-600 shadow-[0_0_30px_rgba(59,130,246,0.5)]">
-                <img src={player2.imageUrl} alt={player2.name} className="w-full h-full object-cover" decoding="async" />
+                <div className="w-full h-full bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center"><CharacterFig cat={player2.category} size={170} name={player2.name} /></div>
               </div>
               <h2 className="text-2xl font-black mt-4 text-blue-400">{player2.name}</h2>
               <p className="text-gray-500 text-sm">{player2.universe}</p>
@@ -113,6 +128,57 @@ export default function Home() {
         </div>
       </div>
 
+      {/* Featured Dream Match — the action, front and center */}
+      <div className="bg-gradient-to-b from-gray-900 via-red-950/30 to-gray-900 border-b border-gray-800">
+        <div className="max-w-7xl mx-auto px-4 py-10 text-center">
+          <p className="text-[10px] font-black uppercase tracking-[0.3em] text-yellow-500 mb-2">⚡ The Dream Match Arena ⚡</p>
+          <h2 className="text-3xl md:text-5xl font-black italic text-white mb-6">WATCH LEGENDS CLASH — INSTANTLY</h2>
+          <div className="flex items-center justify-center gap-4 md:gap-10 mb-8">
+            <div className="text-center">
+              <div className="w-24 h-36 md:w-32 md:h-48 rounded-xl overflow-hidden border-4 border-red-600 shadow-[0_0_25px_rgba(220,38,38,0.5)] bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center"><CharacterFig cat={featuredA.category} size={90} name={featuredA.name} /></div>
+              <p className="mt-2 text-red-400 font-bold text-sm">{featuredA.name}</p>
+              <p className="text-[10px] text-gray-500">{featuredA.universe}</p>
+            </div>
+            <div className="text-5xl md:text-7xl font-black italic text-yellow-500 drop-shadow-[0_0_12px_rgba(234,179,8,0.5)]">VS</div>
+            <div className="text-center">
+              <div className="w-24 h-36 md:w-32 md:h-48 rounded-xl overflow-hidden border-4 border-blue-600 shadow-[0_0_25px_rgba(59,130,246,0.5)] bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center"><CharacterFig cat={featuredB.category} size={90} name={featuredB.name} /></div>
+              <p className="mt-2 text-blue-400 font-bold text-sm">{featuredB.name}</p>
+              <p className="text-[10px] text-gray-500">{featuredB.universe}</p>
+            </div>
+          </div>
+          <div className="flex flex-col sm:flex-row items-center justify-center gap-4">
+            <button onClick={() => goFight(featuredA, featuredB)} className="bg-gradient-to-r from-red-600 to-yellow-500 text-white px-10 py-4 rounded-full font-black text-xl tracking-wider hover:scale-105 transition-all shadow-[0_0_30px_rgba(220,38,38,0.5)]">
+              ▶ WATCH THIS MATCH
+            </button>
+            <button onClick={surpriseMatch} className="bg-gray-800 hover:bg-gray-700 text-yellow-400 px-10 py-4 rounded-full font-black text-xl tracking-wider hover:scale-105 transition-all border border-yellow-600/40">
+              🎲 SURPRISE ME
+            </button>
+          </div>
+          <p className="mt-6 text-xs text-gray-500">1,920+ fighters · Anime vs Cartoons · WWE vs AEW · Toku vs Toku — or build your own below ↓</p>
+        </div>
+      </div>
+
+      {/* AI Demo Fight Video */}
+      <div className="bg-gradient-to-b from-gray-950 via-gray-900 to-gray-950 border-b border-gray-800">
+        <div className="max-w-4xl mx-auto px-4 py-12 text-center">
+          <div className="inline-block bg-red-600/20 text-red-400 text-[10px] font-black uppercase tracking-[0.3em] px-4 py-1 rounded-full mb-4">🤖 AI Prototype</div>
+          <h2 className="text-2xl md:text-3xl font-black italic text-white mb-2">SEE THE FUTURE: AI-Generated Dream Matches</h2>
+          <p className="text-gray-400 text-sm mb-6 max-w-xl mx-auto">This 5-second clip was generated frame-by-frame using AI image generation — a preview of fully animated dream match videos coming soon.</p>
+          <div className="relative mx-auto max-w-2xl rounded-2xl overflow-hidden border-2 border-yellow-600/50 shadow-[0_0_40px_rgba(234,179,8,0.2)]">
+            <img 
+              src="/videos/demo-fight.gif" 
+              alt="AI-Generated Dream Match Fight Demo" 
+              className="w-full h-auto"
+              style={{ imageRendering: 'auto' }}
+            />
+            <div className="absolute bottom-3 right-3 bg-black/70 text-white text-[10px] font-bold px-2 py-1 rounded">
+              AI PROTOTYPE • 5s
+            </div>
+          </div>
+          <p className="mt-4 text-[11px] text-gray-600">Spiky-haired anime warrior vs dark shadow figure — AI prototype using keyframe generation</p>
+        </div>
+      </div>
+
       {/* Selected Fighters Bar */}
       {(player1 || player2) && (
         <div className="bg-gray-800/80 border-b border-gray-700 p-3 flex items-center justify-center gap-4">
@@ -150,7 +216,7 @@ export default function Home() {
                   className={`group relative aspect-[3/4] rounded-lg overflow-hidden cursor-pointer transition-all duration-200 ${
                     isSelected ? 'ring-2 ring-yellow-400 scale-105 z-10' : 'hover:ring-2 hover:ring-white/50 hover:scale-105'
                   } ${isP1 ? 'ring-red-500' : isP2 ? 'ring-blue-500' : ''}`}>
-                  <img src={char.imageUrl} alt={char.name} className="w-full h-full object-cover" loading="lazy" decoding="async" />
+                  <div className="w-full h-full bg-gradient-to-b from-gray-800 to-gray-900 flex items-center justify-center"><CharacterFig cat={char.category} size={90} name={char.name} /></div>
                   <div className="absolute inset-0 bg-gradient-to-t from-black/90 via-transparent to-transparent"></div>
                   <div className="absolute bottom-0 left-0 right-0 p-1.5">
                     <p className="text-[10px] font-bold truncate leading-tight">{char.name}</p>
